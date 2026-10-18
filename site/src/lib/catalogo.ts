@@ -1,4 +1,4 @@
-import { getJson } from "./api";
+import { API_URL, getJson } from "./api";
 
 /** Categorias do catálogo (mesmos nomes do app: lib/models/categoria.dart). */
 export const CATEGORIAS = {
@@ -82,7 +82,7 @@ function normalizarPeca(j: Record<string, unknown>): Peca {
 
 /**
  * Monta o catálogo a partir do JSON. Peça inválida (ex.: categoria desconhecida) é ignorada, não derruba o site.
- * O campo `ativo` do catalogo.json é só do app (lá o catálogo vem desativado): o site mostra o catálogo inteiro.
+ * O campo `ativo` do catalogo.json é ignorado: quem decide o que está ativo é a API.
  */
 export function normalizarCatalogo(dados: unknown): Peca[] {
   const lista = dados && typeof dados === "object" ? (dados as { pecas?: unknown }).pecas : null;
@@ -98,12 +98,52 @@ export function normalizarCatalogo(dados: unknown): Peca[] {
   return pecas;
 }
 
+const CHAVE_CACHE = "rvlabel:catalogo-api";
+
+function lerCache(): unknown {
+  try {
+    const t = localStorage.getItem(CHAVE_CACHE);
+    return t ? JSON.parse(t) : null;
+  } catch {
+    return null;
+  }
+}
+
+function guardarCache(dados: unknown): void {
+  try {
+    localStorage.setItem(CHAVE_CACHE, JSON.stringify(dados));
+  } catch {
+    // navegador sem armazenamento (aba privada, cota cheia): segue sem cópia
+  }
+}
+
 /**
- * Catálogo do site: sempre o catalogo.json que vai junto com ele, com ou sem API.
- * A API (`GET /produtos`) só devolve o que a administradora ativou no app; se o site a usasse, ficaria vazio
- * enquanto o catálogo estiver desativado. A API serve ao site só para gravar e consultar pedidos.
+ * Catálogo do site, com a mesma lógica do app (lib/services/catalogo_repository.dart):
+ * 1. Com a API, a vitrine é o `GET /produtos`, que só traz o que a administradora ativou no painel. A resposta
+ *    fica guardada no navegador.
+ * 2. Se a API não responder, usa a última resposta guardada.
+ * 3. Sem API configurada, ou sem nenhuma resposta guardada, usa o catalogo.json inteiro (ignora `ativo`).
+ * O Render gratuito dorme e pode levar perto de um minuto para acordar; com cópia guardada, espera menos.
  */
 export async function carregarCatalogo(): Promise<Peca[]> {
+  if (API_URL) {
+    const cache = lerCache();
+    try {
+      const dados = await getJson(`${API_URL}/produtos`, cache ? 8000 : 60000);
+      const pecas = normalizarCatalogo(dados);
+      guardarCache(dados);
+      return pecas;
+    } catch (e) {
+      console.warn("API do catálogo indisponível:", e);
+      if (cache) {
+        try {
+          return normalizarCatalogo(cache);
+        } catch {
+          // cópia estragada: cai no catalogo.json
+        }
+      }
+    }
+  }
   return normalizarCatalogo(await getJson(`${BASE}catalogo.json`, 10000));
 }
 

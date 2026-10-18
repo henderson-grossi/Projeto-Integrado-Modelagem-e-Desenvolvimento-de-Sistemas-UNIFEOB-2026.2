@@ -31,7 +31,7 @@ Tudo isso vai para o navegador: **nunca** coloque senhas ou chaves secretas aqui
 
 ### Com a API ligada
 
-O site usa as mesmas rotas do app para os pedidos: `POST /pedidos` e `GET /pedidos/:id?telefone=`. O catálogo nunca vem da API (`GET /produtos` só traz o que a administradora ativou); vem sempre do `catalogo.json`. Se a API estiver fora do ar, o pedido segue só pelo WhatsApp, avisando a cliente. A API precisa aceitar o endereço do site no CORS e usar HTTPS quando o site estiver em HTTPS.
+O site usa as mesmas rotas do app para os pedidos: `POST /pedidos` e `GET /pedidos/:id?telefone=`. O catálogo vem de `GET /produtos`, que só traz o que a administradora ativou no app; a última resposta fica guardada no navegador e é usada se a API não responder. Sem resposta guardada, o site cai no `catalogo.json`. Se a API estiver fora do ar, o pedido segue só pelo WhatsApp, avisando a cliente. A API precisa aceitar o endereço do site no CORS e usar HTTPS quando o site estiver em HTTPS.
 
 ## Publicar (grátis)
 
@@ -56,7 +56,7 @@ scripts/       sync-assets.mjs
 
 ## Limites conhecidos
 
-- **Catálogo:** o campo `"ativo"` do `catalogo.json` vale só para o app (lá o catálogo vem desativado). O site ignora esse campo e mostra o catálogo inteiro, com ou sem `VITE_API_URL`. Com a API ligada, o pedido de uma peça desativada é recusado ("Peça indisponível") até a administradora ativá-la no painel.
+- **Catálogo:** com `VITE_API_URL`, a vitrine é só o que está ativo no painel; se nada estiver ativo, a loja fica vazia. Sem a API, o site ignora o campo `"ativo"` e mostra o `catalogo.json` inteiro. Peça nova com foto nova precisa de `npm run sync` e de um novo deploy, senão aparece "Foto em breve".
 - **Novidades** e **Contato** não têm servidor de e-mail: a mensagem segue pelo WhatsApp da marca.
 - **Fundo:** é um degradê em CSS, não o shader animado do app.
 - **Área administrativa** não existe no site (fica só no app).

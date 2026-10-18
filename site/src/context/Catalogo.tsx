@@ -9,7 +9,7 @@ interface Estado {
 
 const Ctx = createContext<Estado | null>(null);
 
-/** Carrega o catálogo uma vez (catalogo.json) e o entrega às páginas. */
+/** Carrega o catálogo uma vez (API, cópia guardada ou catalogo.json) e o entrega às páginas. */
 export function CatalogoProvider({ children }: { children: ReactNode }) {
   const [estado, setEstado] = useState<Estado>({ pecas: [], carregando: true, erro: null });
 

@@ -87,7 +87,7 @@ O catálogo de peças (`assets/catalogo.json`, 15 peças da coleção Essence) e
 - **Sem a API** (fora do ar ou sem servidor), o app usa essa cópia. Só se nunca falou com o servidor abre com a vitrine vazia, porque o `catalogo.json` embutido vem desativado.
 - **Fotos:** o caminho de cada foto (`assets/fotos/...`) fica no banco e precisa ser igual ao nome de um arquivo que vai dentro do app. Peça que sobrou no banco com foto que não existe mais (por exemplo, as de testes antigos) aparece como "Foto em breve" até alguém corrigir a foto ou desativar a peça.
 - **Ligar uma peça direto no arquivo** (app sem API): troque `"ativo": false` por `true` (ou apague o campo) nessa peça.
-- **O site não é afetado:** ele continua mostrando o catálogo inteiro, porque ignora o campo `ativo` do `catalogo.json`. Isso vale também quando o site usa a API (`VITE_API_URL`): a vitrine sempre vem do `catalogo.json`, e a API serve só para gravar e consultar pedidos. Uma peça que a administradora desativou continua aparecendo, mas a API recusa o pedido dela ("Peça indisponível").
+- **No site:** com a API ligada (`VITE_API_URL`), a vitrine é a mesma do app: só o que a administradora ativou. O site guarda no navegador a última lista que recebeu e a usa se a API não responder. Sem API, ou se nunca recebeu uma lista, mostra o `catalogo.json` inteiro, ignorando o campo `ativo`.
 - Produtos cadastrados pelo painel já nascem ativos. As fotos das peças desativadas continuam disponíveis no formulário de novo produto.
 
 ## Assistente de IA (Firebase)
@@ -156,7 +156,7 @@ Além do app, o repositório tem uma **versão para site** da loja, na pasta [`s
 - **React 18 + Vite + TypeScript + Tailwind**, com poucas dependências.
 - Mesmo catálogo, mesmas fotos, mesma fonte e mesmas cores do app. `npm run sync` copia `assets/catalogo.json`, as fotos, as fontes e os ícones do app para `site/public/`.
 - **Páginas:** Início (com o resumo da coleção por categoria e o guia "Antes de escolher"), Loja, Peça, Sacola, Coleções, Sobre, Contato, Novidades, Meus pedidos e Privacidade/termos (com CNPJ e e-mail de contato). A **área administrativa fica só no app**.
-- **Vitrine sempre completa:** vem do `catalogo.json`, com ou sem API, e ignora o campo `ativo` (veja [Catálogo desativado](#catálogo-desativado)).
+- **Vitrine igual à do app:** com a API, mostra só o que a administradora ativou; sem ela, o `catalogo.json` inteiro (veja [Catálogo desativado](#catálogo-desativado)).
 - **Loja** com filtro por categoria e duas visões: a **vitrine** (lista de nomes com a prévia da foto e uma transição que abre a peça em tela cheia) e a **grade**.
 - **Fechamento de pedido** pelo WhatsApp, com a mesma mensagem do app. Se houver a API (a mesma das rotas `POST /pedidos` e `GET /pedidos/:id`), o pedido também é gravado no banco.
 - **Animações ligadas à rolagem** (scroll-linked, parallax nas fotos), que respeitam "reduzir movimento" do sistema.

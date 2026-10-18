@@ -9,8 +9,8 @@ Segue o formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Versão para site da loja, em React: vitrine, página de cada peça, sacola, "Meus pedidos", Sobre, Contato e Privacidade.
 - Rolagem suave do mouse, transição de foto entre a vitrine e a peça, e "linha de tinta" animada nas opções do cabeçalho.
 - Landing page com o resumo da coleção por categoria e o guia "Antes de escolher" (tamanhos, cores, preços, atendimento).
-- A vitrine vem sempre do `catalogo.json`, com ou sem API: a API só devolve o que a administradora ativou, e com o catálogo
-  desativado a loja ficaria vazia. A API serve ao site só para gravar e consultar pedidos.
+- A vitrine vem da API, como no app: só aparece o que a administradora ativou no painel. A última lista recebida fica
+  guardada no navegador para quando a API não responder; sem ela, e sem API, vale o `catalogo.json`.
 - Privacidade com identificação do responsável (CNPJ) e e-mail de contato para pedidos sobre os dados (LGPD); CNPJ e e-mail
   também no rodapé. Vale para o site e para o app (tela de privacidade e rodapé iguais nos dois).
 - Sem deslocamento de layout ao carregar (CLS 0 na home e na loja), nomes acessíveis dos cartões corrigidos, `robots.txt`

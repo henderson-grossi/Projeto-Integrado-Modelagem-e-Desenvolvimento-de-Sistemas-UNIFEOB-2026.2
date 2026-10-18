@@ -69,21 +69,51 @@ describe("coleções", () => {
 });
 
 describe("origem do catálogo", () => {
-  it("com a API configurada, a vitrine continua vindo do catalogo.json (a API só devolve o que está ativo)", async () => {
+  /** Carrega o módulo com a API e um fetch falso; `api` responde à rota /produtos (null = API fora do ar). */
+  async function carregar(api: unknown, guardado: Record<string, string> = {}) {
     vi.resetModules();
     vi.stubEnv("VITE_API_URL", "http://localhost:3000");
     const pedidos: string[] = [];
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => guardado[k] ?? null,
+      setItem: (k: string, v: string) => (guardado[k] = v),
+    });
     vi.stubGlobal("fetch", async (url: string) => {
       pedidos.push(String(url));
+      if (String(url).endsWith("/produtos")) {
+        if (api === null) throw new TypeError("Failed to fetch");
+        return new Response(JSON.stringify(api));
+      }
       return new Response(JSON.stringify({ pecas: [peca({ id: "so-no-json" })] }));
     });
     const { carregarCatalogo } = await import("./catalogo");
-    const pecas = await carregarCatalogo();
-    vi.unstubAllEnvs();
-    vi.unstubAllGlobals();
-    expect(pecas.map((p) => p.id)).toEqual(["so-no-json"]);
-    expect(pedidos).toHaveLength(1);
-    expect(pedidos[0]).toMatch(/catalogo\.json$/);
-    expect(pedidos.some((u) => u.includes("localhost:3000"))).toBe(false);
+    try {
+      return { ids: (await carregarCatalogo()).map((p) => p.id), pedidos, guardado };
+    } finally {
+      vi.unstubAllEnvs();
+      vi.unstubAllGlobals();
+    }
+  }
+
+  it("com a API, a vitrine é só o que ela devolve (o que a administradora ativou) e fica guardada", async () => {
+    const r = await carregar({ pecas: [peca({ id: "ativa" })] });
+    expect(r.ids).toEqual(["ativa"]);
+    expect(r.pedidos).toEqual(["http://localhost:3000/produtos"]);
+    expect(Object.values(r.guardado)[0]).toContain("ativa");
+  });
+
+  it("com a API ativa e nada ativado, a vitrine fica vazia (não cai no catalogo.json)", async () => {
+    expect((await carregar({ pecas: [] })).ids).toEqual([]);
+  });
+
+  it("API fora do ar: usa a última resposta guardada", async () => {
+    const guardado = { "rvlabel:catalogo-api": JSON.stringify({ pecas: [peca({ id: "da-ultima-vez" })] }) };
+    expect((await carregar(null, guardado)).ids).toEqual(["da-ultima-vez"]);
+  });
+
+  it("API fora do ar e nada guardado: usa o catalogo.json", async () => {
+    const r = await carregar(null);
+    expect(r.ids).toEqual(["so-no-json"]);
+    expect(r.pedidos[1]).toMatch(/catalogo\.json$/);
   });
 });

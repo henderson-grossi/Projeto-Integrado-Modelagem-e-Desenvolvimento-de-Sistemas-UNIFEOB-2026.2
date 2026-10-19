@@ -171,7 +171,7 @@ Outros comandos: `npm test` (testes), `npm run build` (gera `site/dist/`, um sit
 
 Configuração em `site/.env` (modelo em `site/.env.example`): `VITE_WHATSAPP` (número da loja, só dígitos; sem ele o site usa o número fictício `5511999990000`), `VITE_API_URL` (endereço da API; sem ele o site é estático e o pedido segue só pelo WhatsApp) e `VITE_BASE` (subpasta de hospedagem). Nunca coloque senhas ou chaves secretas nesse arquivo: tudo o que está nele vai para o navegador.
 
-O resultado do build pode ser publicado de graça em Cloudflare Pages, Netlify ou GitHub Pages. Detalhes, estrutura e limites conhecidos estão em [`site/README.md`](site/README.md).
+O resultado do build pode ser publicado de graça em Cloudflare Pages, Netlify ou GitHub Pages. Hoje o site está no Netlify, com acesso protegido por senha (ainda não é público), e já mostra a vitrine vinda da API. A publicação é manual: `npm run build` com um `site/.env.production` local, que o git ignora, e depois o deploy da pasta `site/dist/`. Detalhes, estrutura e limites conhecidos estão em [`site/README.md`](site/README.md).
 
 ## Orientação a objetos
 

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -205,6 +207,34 @@ Widget fotoOuPlaceholder(String? caminho,
     child: conteudo,
   );
   return heroTag == null ? quadro : Hero(tag: heroTag, child: quadro);
+}
+
+/// Recolore a foto na cor da [VarianteCor]. Fica aqui, e não no modelo, para o
+/// modelo continuar Dart puro (roda na demo de terminal, sem Flutter).
+extension _FotoNaCor on VarianteCor {
+  Widget aplicar(Widget foto) {
+    if (ehOriginal) return foto;
+    return ColorFiltered(
+      colorFilter: tom != null
+          ? ColorFilter.mode(Color(tom!), BlendMode.color)
+          : ColorFilter.matrix(_matrizHue(hue)),
+      child: foto,
+    );
+  }
+
+  static List<double> _matrizHue(double graus) {
+    final r = graus * math.pi / 180;
+    final c = math.cos(r), s = math.sin(r);
+    return [
+      0.213 + c * 0.787 - s * 0.213, 0.715 - c * 0.715 - s * 0.715,
+      0.072 - c * 0.072 + s * 0.928, 0, 0, //
+      0.213 - c * 0.213 + s * 0.143, 0.715 + c * 0.285 + s * 0.140,
+      0.072 - c * 0.072 - s * 0.283, 0, 0, //
+      0.213 - c * 0.213 - s * 0.787, 0.715 - c * 0.715 + s * 0.715,
+      0.072 + c * 0.928 + s * 0.072, 0, 0, //
+      0, 0, 0, 1, 0,
+    ];
+  }
 }
 
 enum RvButtonVariant { primary, secondary, ghost }

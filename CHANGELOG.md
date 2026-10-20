@@ -41,6 +41,9 @@ Segue o formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - CI no GitHub Actions: testes do site, da API (com MySQL) e do app em todo PR.
 - `README` com a seção do site e do catálogo desativado; este `CHANGELOG`.
 - O `.gitignore` da raiz deixou de ser versionado (os de `android/`, `api/`, `ios/`, `site/` e `windows/` continuam).
+- Demonstração no terminal (`dart run tool/demo_terminal.dart`): encapsulamento, getters/setters, validações e cálculos
+  da sacola com as classes reais do app. Para isso os modelos e as regras da sacola (`SacolaBase`) ficaram em Dart puro;
+  o filtro que recolore a foto foi para a UI e a `Sacola` do app só avisa a tela. Nada muda para quem usa o app.
 
 ## 1.3.0 — 2026-10-16
 - Visual novo seguindo o `docs/DESIGN.md` (editorial escuro): fundo quase preto, vermelho da marca só em botões, seleção e

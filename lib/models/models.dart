@@ -1,4 +1,6 @@
 /// Porta de entrada dos modelos: expõe só o que as outras camadas podem usar.
+library;
+
 export 'acessorio.dart';
 export 'categoria.dart';
 export 'item_sacola.dart';

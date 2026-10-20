@@ -179,6 +179,16 @@ O resultado do build pode ser publicado de graça em Cloudflare Pages, Netlify o
 - **Encapsulamento:** os atributos são privados (`_nome`, `_preco`) e só mudam por get/set com validação.
 - **Ocultação:** a sacola guarda os itens num mapa privado e a tela só enxerga getters e métodos.
 
+### Demonstração no terminal
+
+Mostra tudo isso no console (cmd, PowerShell ou terminal do VS Code), sem abrir o app: cria peças, lê os getters, tenta setters inválidos e exibe a mensagem da validação, monta uma sacola, calcula subtotais, total e itens a combinar, e imprime a mensagem do pedido. Usa as classes reais do app, que são Dart puro. Na raiz do projeto:
+
+```bash
+dart run tool/demo_terminal.dart
+```
+
+Para tirar as cores, acrescente `--sem-cor` (ou defina a variável `NO_COLOR`).
+
 ## Estrutura do código
 
 ```
@@ -195,6 +205,7 @@ site/                  versão para site (React)
 docs/                  documentação do projeto
 release/               pacote da 1.1.1 (os novos saem nas Releases)
 test/                  testes automatizados do app
+tool/                  demonstração no terminal (Dart puro)
 .github/workflows/     CI: testes do site, da API e do app em todo PR
 ```
 

@@ -1,0 +1,68 @@
+name: Instalador Windows
+
+# Gera o instalador do app de Windows (um único .exe). Ao publicar uma Release, o instalador é anexado nela.
+# Em PR que mexe em windows/ e no "Run workflow" manual, ele só fica nos artefatos da execução.
+# O endereço da API vem da variável do repositório API_URL (Settings > Secrets and variables > Actions > Variables);
+# sem ela, o app procura a API em http://localhost:3000.
+on:
+  release:
+    types: [published]
+  pull_request:
+    paths:
+      - 'windows/**'
+      - '.github/workflows/instalador-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  instalador:
+    name: Instalador do app (Windows)
+    # Fixo no 2022: o windows-2025 já vem com o Visual Studio 2026, ainda não testado com o Flutter.
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: C:\rv
+    env:
+      API_URL: ${{ vars.API_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      # O nome do repositório aparece duas vezes no caminho do runner (D:\a\<repo>\<repo>) e o MSBuild falha (FTK1011)
+      # quando o caminho de um arquivo passa de 260 caracteres. Por isso o build roda numa cópia em C:\rv.
+      - name: Copia o projeto para um caminho curto
+        working-directory: ${{ github.workspace }}
+        run: Copy-Item -Recurse $env:GITHUB_WORKSPACE C:\rv
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Build do app
+        run: |
+          $opcoes = @('build', 'windows', '--release')
+          if ($env:API_URL) { $opcoes += "--dart-define=API_URL=$env:API_URL" }
+          flutter @opcoes
+      - name: Copia as DLLs do Visual C++ para junto do .exe
+        run: |
+          foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {
+            Copy-Item "$env:SystemRoot\System32\$dll" build\windows\x64\runner\Release
+          }
+      - name: Compila o instalador
+        run: |
+          choco install innosetup -y --no-progress
+          $iscc = Get-ChildItem "${env:ProgramFiles(x86)}", $env:ProgramFiles -Filter ISCC.exe -Recurse -Depth 2 -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $iscc) { throw 'ISCC.exe não encontrado depois do choco install' }
+          $versao = (Select-String -Path pubspec.yaml -Pattern '^version:\s*([0-9.]+)').Matches[0].Groups[1].Value
+          & $iscc.FullName "/DVersao=$versao" windows\instalador.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: instalador-windows
+          path: C:/rv/build/instalador/*.exe
+      - name: Anexa na Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" (Get-Item build\instalador\*.exe).FullName --clobber

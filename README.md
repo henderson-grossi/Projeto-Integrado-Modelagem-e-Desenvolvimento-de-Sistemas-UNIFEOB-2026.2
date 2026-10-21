@@ -18,7 +18,7 @@ Pegue o `.zip` da versão mais recente em **[Releases](../../releases/latest)**.
 
 Funciona em Windows 10/11 de 64 bits (Intel/AMD); as bibliotecas do Visual C++ já vão no pacote. Como o app ainda não tem assinatura digital, o Windows pode avisar "O Windows protegeu o seu computador": clique em **Mais informações** e depois em **Executar assim mesmo**. No Windows edição "N", instale o *Media Feature Pack* da Microsoft.
 
-Desde a 1.2.2, o pacote das Releases já conversa com o servidor da loja na internet (`https://rvlabel-api.onrender.com`). Ele fica no plano grátis do Render e "dorme" quando ninguém usa: a primeira abertura depois de um tempo pode levar cerca de 50 segundos para trazer as peças. Sem o servidor (veja [Servidor e banco](#servidor-e-banco)) o app mostra a última cópia do catálogo que guardou (o que a administradora tinha ativado), não registra pedidos e a área administrativa não abre. Só se nunca falou com o servidor é que a vitrine abre vazia, porque o catálogo embutido vem desativado.
+Desde a 1.2.2, o pacote das Releases já conversa com o servidor da loja na internet (a API no Render). Ela fica no plano grátis do Render e "dorme" quando ninguém usa: a primeira abertura depois de um tempo pode levar cerca de 50 segundos para trazer as peças. Sem o servidor (veja [Servidor e banco](#servidor-e-banco)) o app mostra a última cópia do catálogo que guardou (o que a administradora tinha ativado), não registra pedidos e a área administrativa não abre. Só se nunca falou com o servidor é que a vitrine abre vazia, porque o catálogo embutido vem desativado.
 
 ## O que o app faz
 
@@ -119,7 +119,7 @@ Em `lib/main.dart`, troque o número fictício (`5511999990000`) pelo da loja: D
 ## Gerar o app de Windows
 
 ```bash
-flutter build windows --release --dart-define=API_URL=https://rvlabel-api.onrender.com
+flutter build windows --release --dart-define=API_URL=https://SEU-SERVICO.onrender.com
 ```
 
 Sem o `--dart-define`, o `.exe` procura a API em `http://localhost:3000` (serve para testar com a API local).

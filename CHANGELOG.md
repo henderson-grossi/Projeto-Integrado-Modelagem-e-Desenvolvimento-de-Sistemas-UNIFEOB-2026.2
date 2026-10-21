@@ -65,7 +65,7 @@ Segue o formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Regras de negócio, chamadas à API, cálculo do total e mensagem do WhatsApp não mudaram.
 
 ## 1.2.2 — 2026-10-16
-- O app de Windows conversa com o servidor da loja na internet (`https://rvlabel-api.onrender.com`, API no Render e banco no
+- O app de Windows conversa com o servidor da loja na internet (API no Render e banco no
   Aiven), em vez de procurar a API em `localhost:3000`: peças, pedidos, "Meus pedidos" e a área administrativa funcionam sem
   servidor local. No plano grátis, a primeira chamada depois de um tempo parado pode levar cerca de 50 segundos.
 - Identificador definitivo do app: `br.com.rvlabel.app` (Android, iOS e Windows); nas propriedades do `.exe`, a empresa

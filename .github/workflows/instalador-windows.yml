@@ -24,10 +24,16 @@ jobs:
     defaults:
       run:
         shell: pwsh
+        working-directory: C:\rv
     env:
       API_URL: ${{ vars.API_URL }}
     steps:
       - uses: actions/checkout@v4
+      # O nome do repositório aparece duas vezes no caminho do runner (D:\a\<repo>\<repo>) e o MSBuild falha (FTK1011)
+      # quando o caminho de um arquivo passa de 260 caracteres. Por isso o build roda numa cópia em C:\rv.
+      - name: Copia o projeto para um caminho curto
+        working-directory: ${{ github.workspace }}
+        run: Copy-Item -Recurse $env:GITHUB_WORKSPACE C:\rv
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -54,7 +60,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: instalador-windows
-          path: build/instalador/*.exe
+          path: C:/rv/build/instalador/*.exe
       - name: Anexa na Release
         if: github.event_name == 'release'
         env:

@@ -44,6 +44,8 @@ Segue o formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Demonstração no terminal (`dart run tool/demo_terminal.dart`): encapsulamento, getters/setters, validações e cálculos
   da sacola com as classes reais do app. Para isso os modelos e as regras da sacola (`SacolaBase`) ficaram em Dart puro;
   o filtro que recolore a foto foi para a UI e a `Sacola` do app só avisa a tela. Nada muda para quem usa o app.
+
+## 1.3.1 — 2026-10-22
 - Instalador do app de Windows em um único `.exe` (Inno Setup, só para o usuário atual, sem pedir administrador),
   gerado pelo GitHub Actions e anexado em cada Release no lugar de descompactar o `.zip`.
 

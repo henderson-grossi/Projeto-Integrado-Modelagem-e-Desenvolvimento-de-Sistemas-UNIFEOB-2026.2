@@ -35,4 +35,4 @@ for (const f of readdirSync(fontes)) copiar(path.join(fontes, f), path.join(publ
 copiar(path.join(app, "web", "favicon.png"), path.join(publico, "favicon.png"));
 copiar(path.join(app, "web", "icons", "Icon-192.png"), path.join(publico, "icon-192.png"));
 copiar(path.join(app, "web", "icons", "Icon-512.png"), path.join(publico, "icon-512.png"));
-copiar(path.join(app, "assets", "icon", "app_icon.png"), path.join(publico, "og.png"));
+copiar(path.join(app, "assets", "icon", "og.png"), path.join(publico, "og.png"));

@@ -11,9 +11,10 @@ O repositório tem três partes, cada uma com a sua pasta: o **app** (Flutter, n
 
 ## Baixar o app (Windows)
 
-Pegue o instalador `rvlabel-app-vX.Y.Z-windows-instalador.exe` da versão mais recente em **[Releases](../../releases/latest)**, abra e siga as telas. Ele instala só para o seu usuário, sem pedir senha de administrador, e cria o atalho no Menu Iniciar (o da área de trabalho é opcional). Para remover, use *Configurações > Aplicativos*.
+Pegue o `.zip` da versão mais recente em **[Releases](../../releases/latest)**.
 
-As versões até a 1.3.0 só têm o `.zip`: descompacte a pasta inteira (não abra o `.exe` de dentro do `.zip`) e abra `rvlabel_app.exe`.
+1. **Descompacte a pasta inteira** (não abra o `.exe` de dentro do `.zip`).
+2. Abra `rvlabel_app.exe`.
 
 Funciona em Windows 10/11 de 64 bits (Intel/AMD); as bibliotecas do Visual C++ já vão no pacote. Como o app ainda não tem assinatura digital, o Windows pode avisar "O Windows protegeu o seu computador": clique em **Mais informações** e depois em **Executar assim mesmo**. No Windows edição "N", instale o *Media Feature Pack* da Microsoft.
 
@@ -123,17 +124,7 @@ flutter build windows --release --dart-define=API_URL=https://SEU-SERVICO.onrend
 
 Sem o `--dart-define`, o `.exe` procura a API em `http://localhost:3000` (serve para testar com a API local).
 
-O executável sai em `build/windows/x64/runner/Release/`, mas não funciona sozinho: precisa das DLLs e da pasta `data` ao lado, mais as DLLs do Visual C++ (`msvcp140.dll`, `vcruntime140.dll` e `vcruntime140_1.dll`). Por isso a distribuição é um instalador, que leva tudo isso dentro de um único `.exe`.
-
-**Pelo GitHub (recomendado):** ao publicar uma Release, o workflow [`instalador-windows.yml`](.github/workflows/instalador-windows.yml) faz o build no Windows, gera o instalador e o anexa na própria Release. O endereço da API vem da variável `API_URL` do repositório (*Settings > Secrets and variables > Actions > Variables*); sem ela, o app procura `http://localhost:3000`. Em *Actions > Instalador Windows > Run workflow* dá para gerar um avulso, que fica nos artefatos da execução.
-
-**Na sua máquina:** instale o [Inno Setup 6](https://jrsoftware.org/isdl.php), rode o `flutter build windows` acima, copie as três DLLs do Visual C++ de `C:\Windows\System32` para `build\windows\x64\runner\Release` e compile:
-
-```powershell
-& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /DVersao=1.3.0 windows\instalador.iss
-```
-
-O instalador sai em `build/instalador/`. A pasta [`release/`](release/) só guarda o `.zip` da 1.1.1, de antes do instalador.
+O executável sai em `build/windows/x64/runner/Release/`. Para distribuir, leve a pasta inteira (o `.exe`, as DLLs e a pasta `data`) mais as DLLs do Visual C++ (`msvcp140.dll`, `vcruntime140.dll` e `vcruntime140_1.dll`) no mesmo diretório. O pacote `.zip` pronto de cada versão (com as DLLs e o `LEIA-ME.txt`) fica nas [Releases](../../releases); a pasta [`release/`](release/) só guarda o da 1.1.1, e os pacotes novos que você gerar ali não são versionados.
 
 ## Gerar o app de Android
 

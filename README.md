@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon/app_icon.png" alt="RV·LABEL" width="160">
+  <img src="assets/icon/logo_horizontal.png" alt="RV·LABEL" width="480">
 </p>
 
 # RV Label
@@ -7,7 +7,7 @@
 App da loja de roupas **RV Label**, coleção **Essence**, feito em Flutter/Dart para Android, iOS, web e Windows.
 Projeto Integrado de Modelagem e Desenvolvimento de Sistemas, UNIFEOB 2026.2.
 
-O repositório tem três partes, cada uma com a sua pasta: o **app** (Flutter, na raiz), o **site** da loja ([`site/`](site/), React) e a **API** de pedidos e do painel ([`api/`](api/), Node + MySQL). Versão atual do app: **1.3.0**. O que mudou em cada versão está no [`CHANGELOG.md`](CHANGELOG.md).
+O repositório tem três partes, cada uma com a sua pasta: o **app** (Flutter, na raiz), o **site** da loja ([`site/`](site/), React) e a **API** de pedidos e do painel ([`api/`](api/), Node + MySQL). Versão atual do app: **1.3.1**. O que mudou em cada versão está no [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Baixar o app (Windows)
 
@@ -143,7 +143,16 @@ Perder a chave impede atualizar o app já publicado.
 
 ## Ícone do app
 
-O ícone é o letreiro RV·LABEL. As imagens-base ficam em `assets/icon/`; para trocar, substitua-as e rode:
+O ícone é o monograma RV em fundo vinho (`#3B0A11`). As imagens-base ficam em `assets/icon/`:
+
+| Arquivo | Uso |
+|---|---|
+| `app_icon.png` | ícone de Android, iOS, web e Windows (1024 px, fundo vinho, sem cantos transparentes) |
+| `app_icon_foreground.png` | primeiro plano do ícone adaptável do Android (só o monograma, fundo transparente) |
+| `logo_horizontal.png` | letreiro do topo deste README |
+| `og.png` | prévia de link do site no WhatsApp e nas redes (1200x630) |
+
+Para trocar o ícone, substitua as imagens e rode o comando abaixo; depois, `npm run sync` em `site/` leva os ícones e o `og.png` para o site.
 
 ```bash
 flutter pub run flutter_launcher_icons

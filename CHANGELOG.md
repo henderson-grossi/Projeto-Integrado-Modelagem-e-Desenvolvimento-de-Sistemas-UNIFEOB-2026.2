@@ -44,6 +44,8 @@ Segue o formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Demonstração no terminal (`dart run tool/demo_terminal.dart`): encapsulamento, getters/setters, validações e cálculos
   da sacola com as classes reais do app. Para isso os modelos e as regras da sacola (`SacolaBase`) ficaram em Dart puro;
   o filtro que recolore a foto foi para a UI e a `Sacola` do app só avisa a tela. Nada muda para quem usa o app.
+- Logo nova (opção "fiel"): o monograma RV em fundo vinho vira o ícone do app em Android, iOS, web e Windows, e os ícones
+  do site; o letreiro horizontal vai para o topo do `README` e para a prévia de link do site (`og.png`, 1200x630).
 
 ## 1.3.1 — 2026-10-22
 - O app de Windows volta a ser distribuído só em `.zip`: descompacte a pasta inteira e abra `rvlabel_app.exe`. O

@@ -46,8 +46,8 @@ Segue o formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
   o filtro que recolore a foto foi para a UI e a `Sacola` do app só avisa a tela. Nada muda para quem usa o app.
 
 ## 1.3.1 — 2026-10-22
-- Instalador do app de Windows em um único `.exe` (Inno Setup, só para o usuário atual, sem pedir administrador),
-  gerado pelo GitHub Actions e anexado em cada Release no lugar de descompactar o `.zip`.
+- O app de Windows volta a ser distribuído só em `.zip`: descompacte a pasta inteira e abra `rvlabel_app.exe`. O
+  instalador em `.exe` (Inno Setup) que saiu nesta versão foi retirado, junto com o workflow que o gerava.
 
 ## 1.3.0 — 2026-10-16
 - Visual novo seguindo o `docs/DESIGN.md` (editorial escuro): fundo quase preto, vermelho da marca só em botões, seleção e

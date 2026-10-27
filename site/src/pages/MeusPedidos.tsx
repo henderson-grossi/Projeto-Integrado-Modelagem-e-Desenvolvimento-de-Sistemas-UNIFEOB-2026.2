@@ -4,16 +4,25 @@ import { useTitulo } from "@/hooks/useTitulo";
 import { API_URL, ApiErro, consultarPedido, type PedidoConsultado } from "@/lib/api";
 import { formatarReais, formatarTelefone, soDigitos } from "@/lib/formato";
 
-const ETAPAS = ["Recebido", "Em separação", "Enviado"];
+const ETAPAS = ["Recebido", "Em separação", "Enviado", "Entregue"];
+/** Cancelado e devolvido encerram o pedido: aparecem como uma etapa só, em vermelho. */
+const ENCERRADOS = ["Cancelado", "Devolvido"];
 
 /** Cor de cada status, a mesma do RvStatusBadge do app (texto na cor, fundo da cor a 15%). */
 const COR_STATUS: Record<string, string> = {
   Recebido: "text-info bg-info/15",
   "Em separação": "text-aviso bg-aviso/15",
   Enviado: "text-sucesso bg-sucesso/15",
+  Entregue: "text-sucesso bg-sucesso/15",
+  Devolvido: "text-perigo bg-perigo/15",
   Cancelado: "text-perigo bg-perigo/15",
 };
-const COR_PONTO: Record<string, string> = { Recebido: "bg-info", "Em separação": "bg-aviso", Enviado: "bg-sucesso" };
+const COR_PONTO: Record<string, string> = {
+  Recebido: "bg-info",
+  "Em separação": "bg-aviso",
+  Enviado: "bg-sucesso",
+  Entregue: "bg-sucesso",
+};
 
 /** O cliente acompanha o andamento com o número do pedido e o telefone usado na compra. */
 export default function MeusPedidos() {
@@ -100,8 +109,8 @@ export default function MeusPedidos() {
               </div>
 
               <ol className="mt-6">
-                {pedido.status === "Cancelado" ? (
-                  <Etapa rotulo="Cancelado" feita atual ultima cor="bg-perigo" icone={<X className="h-3.5 w-3.5" />} />
+                {ENCERRADOS.includes(pedido.status) ? (
+                  <Etapa rotulo={pedido.status} feita atual ultima cor="bg-perigo" icone={<X className="h-3.5 w-3.5" />} />
                 ) : (
                   ETAPAS.map((etapa, i) => (
                     <Etapa

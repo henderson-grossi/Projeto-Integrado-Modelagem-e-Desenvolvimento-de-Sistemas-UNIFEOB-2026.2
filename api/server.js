@@ -144,7 +144,7 @@ app.post('/pedidos', limitePedir, rota(async (req, res) => {
       if (!Number.isInteger(qtd) || qtd < 1 || qtd > 99) throw new Erro(400, 'Quantidade inválida.');
       // A variação (produto + cor + tamanho) tem que existir; trava só a linha dela.
       const [[v]] = await con.query(
-        `SELECT p.id_produto, p.nome, p.preco, v.id_cor, v.id_tamanho, v.quantidade_estoque
+        `SELECT p.id_produto, p.nome, p.preco, p.custo, v.id_cor, v.id_tamanho, v.quantidade_estoque
          FROM produto p
          JOIN cor co    ON co.nome = ?
          JOIN tamanho t ON t.nome = ?
@@ -171,8 +171,9 @@ app.post('/pedidos', limitePedir, rota(async (req, res) => {
     // Quem já é cliente (mesmo CPF ou telefone) só é reaproveitada: um pedido anônimo nunca reescreve os dados dela
     // (senão bastava mandar o CPF dela com outro telefone para passar a ver os pedidos dela).
     // O nome e o telefone informados ficam no próprio pedido, e é por eles que a consulta autoriza.
+    // Cadastro simulado (demonstração do dashboard) nunca é reaproveitado.
     const [[ex]] = await con.query(
-      `SELECT id_cliente FROM cliente WHERE ${cpf ? 'cpf' : 'telefone'} = ? LIMIT 1`, [cpf ?? telefone]);
+      `SELECT id_cliente FROM cliente WHERE ${cpf ? 'cpf' : 'telefone'} = ? AND simulado = 0 LIMIT 1`, [cpf ?? telefone]);
     let clienteId = ex?.id_cliente;
     if (!clienteId) {
       [{ insertId: clienteId }] = await con.query(
@@ -188,9 +189,9 @@ app.post('/pedidos', limitePedir, rota(async (req, res) => {
       [clienteId, nome, telefone, total, pendente ? 1 : 0]);
     for (const l of linhas) {
       await con.query(
-        `INSERT INTO item_pedido (id_pedido, id_produto, id_cor, id_tamanho, quantidade, preco_unitario, subtotal)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [pedidoId, l.v.id_produto, l.v.id_cor, l.v.id_tamanho, l.qtd, l.v.preco, subtotal(l)]);
+        `INSERT INTO item_pedido (id_pedido, id_produto, id_cor, id_tamanho, quantidade, preco_unitario, subtotal, custo_unitario)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [pedidoId, l.v.id_produto, l.v.id_cor, l.v.id_tamanho, l.qtd, l.v.preco, subtotal(l), l.v.custo]);
     }
 
     await con.commit();
@@ -210,7 +211,7 @@ app.get('/pedidos/:id', limiteConsultar, rota(async (req, res) => {
   const [[p]] = await db.query(
     `SELECT pe.id_pedido AS id, pe.data_pedido AS data, pe.status, pe.valor_total AS total, pe.preco_pendente AS precoPendente
      FROM pedido pe
-     WHERE pe.id_pedido = ? AND pe.telefone = ?`, [req.params.id, telefone]);
+     WHERE pe.id_pedido = ? AND pe.telefone = ? AND pe.simulado = 0`, [req.params.id, telefone]);
   if (!p) throw new Erro(404, 'Pedido não encontrado. Confira o número e o telefone.');
   const [itens] = await db.query(itensSql('WHERE ip.id_pedido = ?'), [p.id]);
   res.json({ ...p, precoPendente: !!p.precoPendente, itens });

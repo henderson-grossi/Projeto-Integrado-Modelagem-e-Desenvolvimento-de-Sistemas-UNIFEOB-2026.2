@@ -112,6 +112,33 @@ test('status do pedido muda e cancelar devolve o estoque', async () => {
   assert.equal((await chama('PATCH', `/admin/pedidos/${idPedido}`, { status: 'Recebido' })).status, 409);
 });
 
+test('o pedido guarda o custo da peça; entregue pode virar devolvido, que devolve o estoque e encerra', async () => {
+  assert.equal((await chama('PATCH', `/admin/produtos/${COD}`, { custo: -1 })).status, 400);
+  assert.equal((await chama('PATCH', `/admin/produtos/${COD}`, { custo: 4.5 })).status, 200);
+  await chama('PUT', '/admin/estoque', { codigo: COD, cor: 'Preto', tamanho: 'P', quantidade: 1 });
+  const novo = await chama('POST', '/pedidos', { comprador: { nome: 'Cliente Teste', telefone: TEL }, itens: [{ produtoId: COD, cor: 'Preto', tamanho: 'P', quantidade: 1 }] }, false);
+  assert.equal(novo.status, 201);
+  const [[item]] = await db.query('SELECT custo_unitario FROM item_pedido WHERE id_pedido = ?', [novo.json.id]);
+  assert.equal(Number(item.custo_unitario), 4.5);
+
+  const mudar = (status) => chama('PATCH', `/admin/pedidos/${novo.json.id}`, { status });
+  assert.equal((await mudar('Devolvido')).status, 409); // só depois de entregue
+  assert.equal((await mudar('Entregue')).status, 200);
+  assert.equal((await mudar('Devolvido')).status, 200);
+  const p = (await chama('GET', '/admin/produtos')).json.find((x) => x.codigo === COD);
+  assert.equal(p.variacoes.find((v) => v.tamanho === 'P').estoque, 1);
+  assert.equal((await mudar('Entregue')).status, 409);
+});
+
+test('pedido simulado (demonstração do dashboard) não aparece na consulta nem no painel', async () => {
+  const [{ insertId: cli }] = await db.query("INSERT INTO cliente (nome, telefone, simulado) VALUES ('Simulada', ?, 1)", [TEL]);
+  const [{ insertId: id }] = await db.query(
+    "INSERT INTO pedido (id_cliente, nome_comprador, telefone, status, simulado) VALUES (?, 'Simulada', ?, 'Entregue', 1)", [cli, TEL]);
+  assert.equal((await chama('GET', `/pedidos/${id}?telefone=${TEL}`, null, false)).status, 404);
+  assert.ok(!(await chama('GET', '/admin/pedidos')).json.some((p) => p.id === id));
+  assert.equal((await chama('PATCH', `/admin/pedidos/${id}`, { status: 'Cancelado' })).status, 404);
+});
+
 test('desativar produto o tira da vitrine pública', async () => {
   assert.equal((await chama('PATCH', `/admin/produtos/${COD}`, { ativo: false })).status, 200);
   const vitrine = (await chama('GET', '/produtos', null, false)).json.pecas;

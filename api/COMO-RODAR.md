@@ -20,6 +20,12 @@ Admin (Bearer token de `POST /admin/login`): `GET/POST /admin/produtos`, `PATCH 
 ## Regras que valem a pena lembrar
 - Estoque vazio (NULL) = sem controle; só barra o pedido quem tem número.
 - Cancelar um pedido devolve o estoque e não pode ser desfeito.
+- Status do pedido: Recebido, Em separação, Enviado, Entregue, Devolvido e Cancelado. Só um pedido entregue pode virar
+  devolvido; devolver também repõe o estoque e encerra o pedido. O dashboard conta como venda só o que está "Entregue".
+- Linhas com `simulado = 1` (pedidos, clientes, vendedoras, metas e estoque de demonstração do dashboard) nunca aparecem
+  na API nem no painel, e um pedido novo nunca reaproveita uma cliente simulada.
+- Dashboard de vendas (Power BI): lê as views `bi_*` com um usuário só de leitura. Passo a passo em
+  `docs/powerbi/README.md`.
 - Produto nunca é apagado (pedidos antigos dependem dele): desative em vez disso.
 - O login bloqueia o IP por 15 min depois de 5 erros.
 - A consulta `GET /pedidos/:id?telefone=` compara com o telefone gravado no pedido. Um pedido novo nunca reescreve o cadastro de uma cliente que já existe (mesmo CPF ou telefone).

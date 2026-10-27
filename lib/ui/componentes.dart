@@ -286,7 +286,7 @@ class RvButton extends StatelessWidget {
   }
 }
 
-/// Status do pedido em pílula com ponto colorido (Recebido, Em separação, Enviado, Cancelado).
+/// Status do pedido em pílula com ponto colorido (Recebido, Em separação, Enviado, Entregue, Devolvido, Cancelado).
 class RvStatusBadge extends StatelessWidget {
   const RvStatusBadge(this.status, {super.key});
   final String status;
@@ -294,8 +294,8 @@ class RvStatusBadge extends StatelessWidget {
   static Color corDe(String status) => switch (status) {
         'Recebido' => RvColors.info,
         'Em separação' => RvColors.warning,
-        'Enviado' => RvColors.success,
-        'Cancelado' => RvColors.danger,
+        'Enviado' || 'Entregue' => RvColors.success,
+        'Cancelado' || 'Devolvido' => RvColors.danger,
         _ => RvColors.textSecondary,
       };
 

@@ -19,7 +19,7 @@ class MeusPedidosPage extends StatefulWidget {
 }
 
 class _MeusPedidosPageState extends State<MeusPedidosPage> {
-  static const _etapas = ['Recebido', 'Em separação', 'Enviado'];
+  static const _etapas = ['Recebido', 'Em separação', 'Enviado', 'Entregue'];
   final _numero = TextEditingController();
   final _telefone = TextEditingController();
   Map<String, dynamic>? _pedido;
@@ -110,7 +110,8 @@ class _MeusPedidosPageState extends State<MeusPedidosPage> {
 
   List<Widget> _detalhe(BuildContext context, Map<String, dynamic> p) {
     final status = p['status'] as String;
-    final cancelado = status == 'Cancelado';
+    // Cancelado e devolvido encerram o pedido: aparecem como uma etapa só, em vermelho.
+    final encerrado = status == 'Cancelado' || status == 'Devolvido';
     final atual = _etapas.indexOf(status);
     // A API só guarda a data do pedido (etapa "Recebido"); as outras etapas aparecem sem data.
     final data = DateTime.tryParse('${p['data']}')?.toLocal();
@@ -131,14 +132,14 @@ class _MeusPedidosPageState extends State<MeusPedidosPage> {
               RvStatusBadge(status),
             ]),
             const SizedBox(height: RvSpace.xl),
-            if (cancelado)
-              const _Etapa(
-                rotulo: 'Cancelado',
+            if (encerrado)
+              _Etapa(
+                rotulo: status,
                 data: null,
                 cor: RvColors.danger,
                 feita: true,
                 ultima: true,
-                icone: Icons.cancel,
+                icone: status == 'Devolvido' ? Icons.assignment_return : Icons.cancel,
               )
             else
               for (var i = 0; i < _etapas.length; i++)

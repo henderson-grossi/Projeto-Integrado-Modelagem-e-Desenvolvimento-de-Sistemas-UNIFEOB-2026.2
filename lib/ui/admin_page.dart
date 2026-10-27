@@ -15,7 +15,10 @@ import 'fundo_liquido.dart';
 import 'rolagem_suave.dart';
 import 'tema.dart';
 
-const _statusPedido = ['Recebido', 'Em separação', 'Enviado', 'Cancelado'];
+const _statusPedido = ['Recebido', 'Em separação', 'Enviado', 'Entregue', 'Devolvido', 'Cancelado'];
+
+/// Cancelado e devolvido devolvem o estoque e não podem ser reabertos (a API recusa).
+bool _statusFinal(Object? s) => s == 'Cancelado' || s == 'Devolvido';
 
 /// Lista "carregando": blocos com brilho no lugar das linhas.
 Widget _carregandoLista() => ListView(
@@ -232,7 +235,7 @@ class _PedidosAdminState extends State<_PedidosAdmin>
           }
           final ind = IndicadoresVendas.calcular([
             for (final p in lista)
-              if (p['status'] != 'Cancelado') (p['total'] as num).toDouble()
+              if (!_statusFinal(p['status'])) (p['total'] as num).toDouble()
           ]);
           return RefreshIndicator(
             onRefresh: () async => recarregar(),
@@ -267,7 +270,7 @@ class _PedidosAdminState extends State<_PedidosAdmin>
                         items: [
                           for (final s in _statusPedido) DropdownMenuItem(value: s, child: Text(s))
                         ],
-                        onChanged: p['status'] == 'Cancelado'
+                        onChanged: _statusFinal(p['status'])
                             ? null
                             : (s) => s == null ? null : _confirmar(p['id'] as int, s),
                       ),
@@ -280,15 +283,16 @@ class _PedidosAdminState extends State<_PedidosAdmin>
       );
 
   Future<void> _confirmar(int id, String status) async {
-    if (status == 'Cancelado') {
+    if (_statusFinal(status)) {
+      final acao = status == 'Cancelado' ? 'Cancelar pedido' : 'Marcar como devolvido';
       final ok = await showDialog<bool>(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Cancelar pedido?'),
+          title: Text('$acao?'),
           content: const Text('O estoque das peças será devolvido e o pedido não poderá ser reaberto.'),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Voltar')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Cancelar pedido')),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(acao)),
           ],
         ),
       );
@@ -609,6 +613,22 @@ class _ProdutosAdminState extends State<ProdutosAdmin>
                           if (v != null && (preco == null || preco < 0)) return aviso(ApiErro('Preço inválido.'));
                           await _executar(() =>
                               widget.alterarProduto(p['codigo'] as String, {'preco': preco}));
+                        },
+                      ),
+                      // O custo entra no lucro e na margem do dashboard de vendas.
+                      TextButton.icon(
+                        icon: const Icon(Icons.edit, size: 18),
+                        label: Text(p['custo'] == null
+                            ? 'Informar custo'
+                            : 'Custo: ${formatarReais((p['custo'] as num).toDouble())}'),
+                        onPressed: () async {
+                          final (ok, v) = await _perguntar('Custo', 'Ex.: 45,00 (vazio = não informado)',
+                              p['custo']?.toString() ?? '');
+                          if (!ok) return;
+                          final custo = v == null ? null : double.tryParse(v);
+                          if (v != null && (custo == null || custo < 0)) return aviso(ApiErro('Custo inválido.'));
+                          await _executar(() =>
+                              widget.alterarProduto(p['codigo'] as String, {'custo': custo}));
                         },
                       ),
                       const Text('Estoque (toque para alterar)'),

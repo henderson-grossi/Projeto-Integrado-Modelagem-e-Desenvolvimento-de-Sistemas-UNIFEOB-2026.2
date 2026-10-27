@@ -5,7 +5,7 @@
 <h1 align="center">RV Label</h1>
 
 <p align="center">
-  Loja da coleção <strong>Essence</strong>: app em Flutter, site em React e API em Node + MySQL.<br>
+  Loja: app em Flutter, site em React e API em Node + MySQL.<br>
   Projeto Integrado de Modelagem e Desenvolvimento de Sistemas, UNIFEOB 2026.2.
 </p>
 

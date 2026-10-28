@@ -48,8 +48,16 @@ class ApiAdmin {
       _chamar('PUT', '/admin/estoque',
           corpo: {'codigo': codigo, 'cor': cor, 'tamanho': tamanho, 'quantidade': quantidade});
 
-  static Future<List<Map<String, dynamic>>> pedidos() async =>
-      ((await _chamar('GET', '/admin/pedidos')) as List).cast<Map<String, dynamic>>();
+  /// [de] e [ate] no formato 'AAAA-MM' (os dois meses entram); sem período vêm os 200 mais recentes.
+  static Future<List<Map<String, dynamic>>> pedidos({String? de, String? ate}) async {
+    final q = {if (de != null) 'de': de, if (ate != null) 'ate': ate};
+    final caminho = q.isEmpty ? '/admin/pedidos' : '/admin/pedidos?${Uri(queryParameters: q).query}';
+    return ((await _chamar('GET', caminho)) as List).cast<Map<String, dynamic>>();
+  }
+
+  /// Apaga todos os dados de demonstração do dashboard. Devolve quantos pedidos saíram.
+  static Future<int> apagarSimulados() async =>
+      ((await _chamar('DELETE', '/admin/simulados')) as Map)['pedidos'] as int;
 
   static Future<void> mudarStatus(int id, String status) =>
       _chamar('PATCH', '/admin/pedidos/$id', corpo: {'status': status});

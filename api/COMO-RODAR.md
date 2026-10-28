@@ -22,8 +22,12 @@ Admin (Bearer token de `POST /admin/login`): `GET/POST /admin/produtos`, `PATCH 
 - Cancelar um pedido devolve o estoque e não pode ser desfeito.
 - Status do pedido: Recebido, Em separação, Enviado, Entregue, Devolvido e Cancelado. Só um pedido entregue pode virar
   devolvido; devolver também repõe o estoque e encerra o pedido. O dashboard conta como venda só o que está "Entregue".
-- Linhas com `simulado = 1` (pedidos, clientes, vendedoras, metas e estoque de demonstração do dashboard) nunca aparecem
-  na API nem no painel, e um pedido novo nunca reaproveita uma cliente simulada.
+- Linhas com `simulado = 1` (pedidos, clientes, vendedoras, metas e estoque de demonstração do dashboard) aparecem no
+  painel como pedidos normais, mas mudar o status delas não mexe no estoque real. A consulta pública
+  `GET /pedidos/:id` as ignora e um pedido novo nunca reaproveita uma cliente simulada. `DELETE /admin/simulados`
+  (menu "Apagar dados de demonstração" do painel) apaga todas de uma vez.
+- `GET /admin/pedidos?de=AAAA-MM&ate=AAAA-MM` filtra pelo mês do pedido (os dois meses entram, até 3000 pedidos).
+  Sem período vêm os 200 mais recentes.
 - Dashboard de vendas (Power BI): lê as views `bi_*` com um usuário só de leitura. Passo a passo em
   `docs/powerbi/README.md`.
 - Produto nunca é apagado (pedidos antigos dependem dele): desative em vez disso.

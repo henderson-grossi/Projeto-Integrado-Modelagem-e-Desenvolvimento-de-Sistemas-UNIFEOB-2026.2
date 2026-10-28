@@ -130,13 +130,32 @@ test('o pedido guarda o custo da peça; entregue pode virar devolvido, que devol
   assert.equal((await mudar('Entregue')).status, 409);
 });
 
-test('pedido simulado (demonstração do dashboard) não aparece na consulta nem no painel', async () => {
+test('painel filtra por período e trata o pedido simulado como real, sem mexer no estoque', async () => {
   const [{ insertId: cli }] = await db.query("INSERT INTO cliente (nome, telefone, simulado) VALUES ('Simulada', ?, 1)", [TEL]);
   const [{ insertId: id }] = await db.query(
-    "INSERT INTO pedido (id_cliente, nome_comprador, telefone, status, simulado) VALUES (?, 'Simulada', ?, 'Entregue', 1)", [cli, TEL]);
-  assert.equal((await chama('GET', `/pedidos/${id}?telefone=${TEL}`, null, false)).status, 404);
-  assert.ok(!(await chama('GET', '/admin/pedidos')).json.some((p) => p.id === id));
-  assert.equal((await chama('PATCH', `/admin/pedidos/${id}`, { status: 'Cancelado' })).status, 404);
+    `INSERT INTO pedido (id_cliente, nome_comprador, telefone, data_pedido, status, simulado)
+     VALUES (?, 'Simulada', ?, '2019-03-15 10:00:00', 'Entregue', 1)`, [cli, TEL]);
+  await db.query(
+    `INSERT INTO item_pedido (id_pedido, id_produto, id_cor, id_tamanho, quantidade, preco_unitario, subtotal)
+     SELECT ?, v.id_produto, v.id_cor, v.id_tamanho, 1, 10, 10 FROM variacao v
+     JOIN produto p ON p.id_produto = v.id_produto JOIN tamanho t ON t.id_tamanho = v.id_tamanho
+     WHERE p.codigo = ? AND t.nome = 'P'`, [id, COD]);
+
+  const lista = async (q) => (await chama('GET', `/admin/pedidos?${q}`)).json;
+  const marco = await lista('de=2019-03&ate=2019-03');
+  assert.deepEqual(marco.map((p) => p.id), [id]); // só o mês pedido, com os itens
+  assert.equal(marco[0].itens.length, 1);
+  assert.ok(!(await lista('de=2019-04')).some((p) => p.id === id));
+  assert.ok((await lista('ate=2019-03')).some((p) => p.id === id));
+  assert.equal((await chama('GET', '/admin/pedidos?de=2019-13')).status, 400);
+  assert.equal((await chama('GET', '/admin/pedidos?de=2019-05&ate=2019-03')).status, 400);
+
+  const estoqueP = async () => (await chama('GET', '/admin/produtos')).json
+    .find((x) => x.codigo === COD).variacoes.find((v) => v.tamanho === 'P').estoque;
+  const antes = await estoqueP();
+  assert.equal((await chama('PATCH', `/admin/pedidos/${id}`, { status: 'Devolvido' })).status, 200);
+  assert.equal(await estoqueP(), antes); // simulado nunca baixou estoque, então não devolve
+  assert.equal((await chama('GET', `/pedidos/${id}?telefone=${TEL}`, null, false)).status, 404); // consulta pública ignora
 });
 
 test('desativar produto o tira da vitrine pública', async () => {

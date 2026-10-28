@@ -143,6 +143,31 @@ class _Painel extends StatefulWidget {
 
 class _PainelState extends State<_Painel> {
   int _versao = 0; // muda ao cadastrar produto, para a lista recarregar
+  int _versaoPedidos = 0; // muda ao apagar os dados de demonstração
+
+  Future<void> _apagarSimulados() async {
+    final msg = ScaffoldMessenger.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Apagar dados de demonstração?'),
+        content: const Text('Saem todos os pedidos, clientes, vendedoras, metas e estoque mensal simulados '
+            '(os usados no dashboard de vendas). Os pedidos reais continuam. Não dá para desfazer.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Voltar')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Apagar')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      final n = await ApiAdmin.apagarSimulados();
+      msg.showSnackBar(SnackBar(content: Text('$n pedidos de demonstração apagados.')));
+      if (mounted) setState(() => _versaoPedidos++);
+    } catch (e) {
+      msg.showSnackBar(SnackBar(content: Text(e is ApiErro ? e.mensagem : 'Não foi possível apagar.')));
+    }
+  }
 
   Future<void> _novoProduto() async {
     final criou = await Navigator.of(context).push<bool>(MaterialPageRoute(
@@ -158,6 +183,12 @@ class _PainelState extends State<_Painel> {
           appBar: AppBar(
             title: const Text('Administração'),
             actions: [
+              PopupMenuButton<void>(
+                tooltip: 'Mais opções',
+                itemBuilder: (_) => [
+                  PopupMenuItem(onTap: _apagarSimulados, child: const Text('Apagar dados de demonstração')),
+                ],
+              ),
               TextButton(onPressed: widget.onSair, child: const Text('Sair')),
             ],
             bottom: const TabBar(tabs: [Tab(text: 'Pedidos'), Tab(text: 'Produtos')]),
@@ -169,7 +200,7 @@ class _PainelState extends State<_Painel> {
           ),
           body: FundoLiquido(
             child: TabBarView(children: [
-              const _PedidosAdmin(),
+              _PedidosAdmin(key: ValueKey(_versaoPedidos)),
               ProdutosAdmin(key: ValueKey(_versao)),
             ]),
           ),
@@ -197,15 +228,74 @@ mixin _Carrega<T extends StatefulWidget, L> on State<T> {
 }
 
 class _PedidosAdmin extends StatefulWidget {
-  const _PedidosAdmin();
+  const _PedidosAdmin({super.key});
   @override
   State<_PedidosAdmin> createState() => _PedidosAdminState();
 }
 
 class _PedidosAdminState extends State<_PedidosAdmin>
     with _Carrega<_PedidosAdmin, Map<String, dynamic>> {
+  String? _de, _ate; // período 'AAAA-MM'; vazio = os 200 pedidos mais recentes
+
   @override
-  Future<List<Map<String, dynamic>>> buscar() => ApiAdmin.pedidos();
+  Future<List<Map<String, dynamic>>> buscar() => ApiAdmin.pedidos(de: _de, ate: _ate);
+
+  /// Os últimos 48 meses, do mais recente para o mais antigo.
+  static final _meses = () {
+    final hoje = DateTime.now();
+    return [
+      for (var i = 0; i < 48; i++)
+        DateTime(hoje.year, hoje.month - i).toIso8601String().substring(0, 7),
+    ];
+  }();
+  static const _abrev = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  static String _rotuloMes(String m) => '${_abrev[int.parse(m.substring(5)) - 1]}/${m.substring(0, 4)}';
+
+  // 'AAAA-MM' compara certo como texto; início depois do fim puxa o outro lado junto.
+  void _periodo({String? de, String? ate, bool limpar = false}) {
+    setState(() {
+      if (limpar) {
+        _de = _ate = null;
+      } else if (de != null) {
+        _de = de;
+        if (_ate != null && _ate!.compareTo(de) < 0) _ate = de;
+      } else if (ate != null) {
+        _ate = ate;
+        if (_de != null && _de!.compareTo(ate) > 0) _de = ate;
+      }
+    });
+    recarregar();
+  }
+
+  Widget _seletorMes(String rotulo, String? valor, ValueChanged<String> aoEscolher) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('$rotulo '),
+          DropdownButton<String>(
+            value: valor,
+            hint: const Text('—'),
+            items: [for (final m in _meses) DropdownMenuItem(value: m, child: Text(_rotuloMes(m)))],
+            onChanged: (m) => m == null ? null : aoEscolher(m),
+          ),
+        ],
+      );
+
+  Widget _filtroPeriodo() => Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Wrap(
+            spacing: RvSpace.md,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              const Icon(Icons.date_range, size: 20),
+              _seletorMes('De', _de, (m) => _periodo(de: m)),
+              _seletorMes('Até', _ate, (m) => _periodo(ate: m)),
+              if (_de != null || _ate != null)
+                TextButton(onPressed: () => _periodo(limpar: true), child: const Text('Limpar período')),
+            ],
+          ),
+        ),
+      );
 
   Future<void> _mudar(int id, String status) async {
     try {
@@ -225,13 +315,17 @@ class _PedidosAdminState extends State<_PedidosAdmin>
           }
           if (snap.hasError) return _erroLista(recarregar);
           final lista = snap.data!;
+          final filtrado = _de != null || _ate != null;
           if (lista.isEmpty) {
-            return const Center(
-              child: RvEmptyState(
+            return ListaSuave(padding: const EdgeInsets.all(12), children: [
+              _filtroPeriodo(),
+              RvEmptyState(
                   icone: Icons.receipt_long_outlined,
-                  titulo: 'Nenhum pedido ainda',
-                  texto: 'Os pedidos feitos no app aparecem aqui.'),
-            );
+                  titulo: filtrado ? 'Nenhum pedido no período' : 'Nenhum pedido ainda',
+                  texto: filtrado
+                      ? 'Escolha outros meses ou limpe o período.'
+                      : 'Os pedidos feitos no app aparecem aqui.'),
+            ]);
           }
           final ind = IndicadoresVendas.calcular([
             for (final p in lista)
@@ -240,6 +334,7 @@ class _PedidosAdminState extends State<_PedidosAdmin>
           return RefreshIndicator(
             onRefresh: () async => recarregar(),
             child: ListaSuave(padding: const EdgeInsets.all(12), children: [
+              _filtroPeriodo(),
               if (ind != null) _CartaoIndicadores(ind),
               for (final p in lista)
                 Card(

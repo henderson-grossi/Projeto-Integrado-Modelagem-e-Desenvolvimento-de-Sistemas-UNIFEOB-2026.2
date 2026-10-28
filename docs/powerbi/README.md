@@ -19,7 +19,9 @@ O faturamento conta só pedidos **Entregue**. Na loja, marque o pedido como "Ent
 1. **Banco:** em `api/`, `npm run migrar` (aplica a 002, que cria as tabelas e colunas, e a 003, que cria as views).
 2. **Dados de demonstração (opcional):**
    `mysql --default-character-set=utf8mb4 -u root -p Rv_Label < docs/powerbi/dados-simulados.sql`.
-   São 489 pedidos de out/2025 a set/2026, com metas e estoque; entram com `simulado = 1`. Rodar de novo recarrega.
+   São 2.257 pedidos (3.516 itens) de ago/2024 a out/2026, em todas as peças essence com preço, com 520 clientes,
+   4 vendedoras, metas e estoque mensais. Entram com `simulado = 1` e rodar de novo recarrega.
+   No painel do app eles aparecem e funcionam como pedidos reais (só mudar o status não mexe no estoque real).
 3. **Usuário só de leitura**, para o Power BI não ver telefone, CPF nem as outras tabelas (no MySQL, como root):
    ```sql
    CREATE USER 'powerbi_leitura'@'localhost' IDENTIFIED BY 'uma senha forte';
@@ -52,7 +54,8 @@ usuário lá e marque a criptografia (SSL) na credencial.
   sem vendedora, porque a loja não pergunta isso no pedido.
 
 ## Tirar os dados de demonstração
-Faça backup antes (`npm run backup` em `api/`). Depois, no MySQL:
+Pelo app: painel de administração, menu **⋮ > Apagar dados de demonstração** (pede confirmação; os pedidos reais
+ficam). Ou faça backup (`npm run backup` em `api/`) e rode no MySQL:
 ```sql
 START TRANSACTION;
 DELETE FROM pedido WHERE simulado = 1;          -- os itens saem junto

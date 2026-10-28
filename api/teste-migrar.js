@@ -37,7 +37,7 @@ test.after(async () => {
 
 test('banco criado pelo schema.sql atual: 001 e 002 são só anotadas, as views (003) são criadas, e rodar de novo não faz nada', async () => {
   assert.deepEqual(await migrar(con, { log: silencio }),
-    { aplicadas: ['003-painel-bi-views'], puladas: ['001-pedido-contato', '002-painel-bi'] });
+    { aplicadas: ['003-painel-bi-views', '004-categorias-repetidas'], puladas: ['001-pedido-contato', '002-painel-bi'] });
   assert.deepEqual(await migrar(con, { log: silencio }), { aplicadas: [], puladas: [] });
 });
 
@@ -48,7 +48,7 @@ test('banco antigo (sem as colunas, telefone com máscara): aplica, tira a másc
   await con.query('INSERT INTO pedido (id_cliente) SELECT id_cliente FROM cliente');
 
   assert.deepEqual(await migrar(con, { log: silencio }),
-    { aplicadas: ['001-pedido-contato', '003-painel-bi-views'], puladas: ['002-painel-bi'] });
+    { aplicadas: ['001-pedido-contato', '003-painel-bi-views', '004-categorias-repetidas'], puladas: ['002-painel-bi'] });
 
   const [[pedido]] = await con.query('SELECT nome_comprador, telefone FROM pedido');
   assert.deepEqual({ ...pedido }, { nome_comprador: 'Fulana', telefone: '35999990000' });
@@ -100,4 +100,21 @@ test('views do dashboard: valores da venda, saídas do estoque vindas dos pedido
   assert.equal(cal.ate_fim, 1);
   const [[dia]] = await con.query("SELECT Dia_Semana, Semana_Ano, Mes_Ano FROM bi_calendario WHERE Data = '2025-10-01'");
   assert.deepEqual({ ...dia }, { Dia_Semana: 'Quarta', Semana_Ano: 40, Mes_Ano: 'Out/25' }); // igual ao Excel
+});
+
+test('004 junta a categoria repetida na do catálogo e mostra "Acessórios" com acento', async () => {
+  await con.query(`
+    INSERT INTO categoria (nome, id_admin) SELECT 'Body', id_admin FROM categoria WHERE nome = 'bodys';
+    INSERT INTO produto (codigo, nome, id_categoria, id_admin)
+      SELECT 'demo-1', 'Body Canelado', id_categoria, id_admin FROM categoria WHERE nome = 'Body';
+    INSERT INTO categoria (nome, id_admin) SELECT 'acessorios', id_admin FROM categoria WHERE nome = 'bodys';
+    INSERT INTO produto (codigo, nome, id_categoria, id_admin)
+      SELECT 'essence-018', 'Cinto', id_categoria, id_admin FROM categoria WHERE nome = 'acessorios';`);
+  await con.query(fs.readFileSync(path.join(__dirname, 'migracoes', '004-categorias-repetidas.sql'), 'utf8'));
+
+  const [[demo]] = await con.query(
+    "SELECT c.nome FROM produto p JOIN categoria c ON c.id_categoria = p.id_categoria WHERE p.codigo = 'demo-1'");
+  assert.equal(demo.nome, 'bodys');
+  const [nomes] = await con.query('SELECT Categoria FROM bi_categorias ORDER BY Categoria');
+  assert.deepEqual(nomes.map((n) => n.Categoria), ['Acessórios', 'Bodys']); // sem "Body" repetido
 });

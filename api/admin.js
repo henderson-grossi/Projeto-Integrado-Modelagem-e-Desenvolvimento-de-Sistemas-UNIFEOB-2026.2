@@ -143,13 +143,49 @@ r.put('/estoque', rota(async (req, res) => {
   res.json({ ok: true });
 }));
 
-r.get('/pedidos', rota(async (_req, res) => {
+// 'AAAA-MM' vira o dia 1 do mês; vazio = sem limite desse lado.
+const mesOuNull = (v, campo) => {
+  if (v == null || v === '') return null;
+  const m = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(String(v));
+  if (!m) throw new Erro(400, `${campo} inválido (use AAAA-MM).`);
+  return `${m[1]}-${m[2]}-01`;
+};
+
+// ?de=AAAA-MM&ate=AAAA-MM filtra pelo mês do pedido (os dois meses entram). Sem período: os 200 mais recentes.
+// Pedidos simulados (demonstração do dashboard) entram como os reais; DELETE /admin/simulados apaga todos.
+r.get('/pedidos', rota(async (req, res) => {
+  const de = mesOuNull(req.query.de, 'Início'), ate = mesOuNull(req.query.ate, 'Fim');
+  if (de && ate && de > ate) throw new Erro(400, 'O início do período é depois do fim.');
+  const conds = [], vals = [];
+  if (de) { conds.push('pe.data_pedido >= ?'); vals.push(de); }
+  if (ate) { conds.push('pe.data_pedido < ? + INTERVAL 1 MONTH'); vals.push(ate); }
+  const limite = conds.length ? 3000 : 200; // shortcut: período com mais de 3000 pedidos vem cortado; paginar se a loja crescer
   const [peds] = await db.query(
     `SELECT pe.id_pedido AS id, pe.data_pedido AS data, pe.status, pe.valor_total AS total,
             pe.preco_pendente AS precoPendente, pe.nome_comprador AS cliente, pe.telefone
-     FROM pedido pe WHERE pe.simulado = 0 ORDER BY pe.id_pedido DESC LIMIT 200`);
-  const [itens] = await db.query(itensSql('WHERE ip.id_pedido IN (SELECT id_pedido FROM (SELECT id_pedido FROM pedido WHERE simulado = 0 ORDER BY id_pedido DESC LIMIT 200) x)'));
-  res.json(peds.map((p) => ({ ...p, precoPendente: !!p.precoPendente, itens: itens.filter((i) => i.pedido === p.id) })));
+     FROM pedido pe ${conds.length ? `WHERE ${conds.join(' AND ')}` : ''}
+     ORDER BY pe.data_pedido DESC, pe.id_pedido DESC LIMIT ${limite}`, vals);
+  const [itens] = peds.length
+    ? await db.query(itensSql('WHERE ip.id_pedido IN (?)'), [peds.map((p) => p.id)])
+    : [[]];
+  const porPedido = new Map(peds.map((p) => [p.id, []]));
+  for (const i of itens) porPedido.get(i.pedido).push(i);
+  res.json(peds.map((p) => ({ ...p, precoPendente: !!p.precoPendente, itens: porPedido.get(p.id) })));
+}));
+
+// Apaga de uma vez os dados de demonstração do dashboard: pedidos (com os itens), clientes, vendedoras, metas e
+// estoque mensal com simulado = 1. Nada real é tocado.
+r.delete('/simulados', rota(async (_req, res) => {
+  const con = await db.getConnection();
+  try {
+    await con.beginTransaction();
+    const [pedidos] = await con.query('DELETE FROM pedido WHERE simulado = 1');
+    for (const t of ['cliente', 'vendedor', 'meta_mensal', 'estoque_mensal']) {
+      await con.query(`DELETE FROM ${t} WHERE simulado = 1`);
+    }
+    await con.commit();
+    res.json({ pedidos: pedidos.affectedRows });
+  } catch (e) { await con.rollback(); throw e; } finally { con.release(); }
 }));
 
 r.patch('/pedidos/:id', rota(async (req, res) => {
@@ -158,14 +194,14 @@ r.patch('/pedidos/:id', rota(async (req, res) => {
   const con = await db.getConnection();
   try {
     await con.beginTransaction();
-    const [[ped]] = await con.query('SELECT status FROM pedido WHERE id_pedido = ? AND simulado = 0 FOR UPDATE', [req.params.id]);
+    const [[ped]] = await con.query('SELECT status, simulado FROM pedido WHERE id_pedido = ? FOR UPDATE', [req.params.id]);
     if (!ped) throw new Erro(404, 'Pedido não encontrado.');
     if (FINAIS.includes(ped.status) && status !== ped.status)
       throw new Erro(409, `Pedido ${ped.status.toLowerCase()} não pode ser reaberto.`);
     if (status === 'Devolvido' && ped.status !== 'Entregue' && ped.status !== 'Devolvido')
       throw new Erro(409, 'Só um pedido entregue pode ser devolvido.');
-    if (FINAIS.includes(status) && !FINAIS.includes(ped.status)) {
-      // Devolve ao estoque só o que tem controle (quantidade não nula).
+    if (FINAIS.includes(status) && !FINAIS.includes(ped.status) && !ped.simulado) {
+      // Devolve ao estoque só o que tem controle (quantidade não nula). Pedido simulado nunca baixou estoque real.
       await con.query(
         `UPDATE variacao v JOIN item_pedido ip
            ON ip.id_produto = v.id_produto AND ip.id_cor = v.id_cor AND ip.id_tamanho = v.id_tamanho

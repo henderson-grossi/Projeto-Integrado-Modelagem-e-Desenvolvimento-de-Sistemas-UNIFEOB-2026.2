@@ -1,0 +1,952 @@
+cultureInfo pt-BR
+
+	linguisticMetadata =
+			{
+			  "Version": "2.0.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "dim_calendario.mes_ano": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Calendario",
+			          "ConceptualProperty": "Mes_Ano"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Mês": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_calendario.dia_semana": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Calendario",
+			          "ConceptualProperty": "Dia_Semana"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Dia": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_calendario.ano_trimestre": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Calendario",
+			          "ConceptualProperty": "Ano_Trimestre"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Trimestre": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_categorias.categoria": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Categorias",
+			          "ConceptualProperty": "Categoria"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Categoria": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.faturamento": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Faturamento"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Faturamento": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.lucro_total": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Lucro Total"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Lucro": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.pedidos_entregues": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Pedidos Entregues"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Pedidos entregues": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Pedidos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.atingimento_da_meta_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Atingimento da Meta %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Atingimento da meta": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Atingimento": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.itens_vendidos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Itens Vendidos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Itens": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Itens vendidos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.margem_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Margem %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Margem": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.ticket_médio": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Ticket Médio"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Ticket médio": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.desconto_concedido": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Desconto Concedido"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Descontos concedidos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.clientes_ativos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Clientes Ativos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Clientes ativos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.pedidos_por_cliente": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Pedidos por Cliente"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Pedidos por cliente": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.taxa_de_devolução": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Taxa de Devolução"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Taxa de devolução": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Devoluções": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_produtos.produto": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Produtos",
+			          "ConceptualProperty": "Produto"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Produto": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_produtos.cor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Produtos",
+			          "ConceptualProperty": "Cor"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Cor": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_produtos.sku": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Produtos",
+			          "ConceptualProperty": "SKU"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "SKU": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Peça": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_estoque.estoque_final": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Estoque",
+			          "ConceptualProperty": "Estoque Final"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Peças em estoque": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Estoque": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_estoque.valor_em_estoque": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Estoque",
+			          "ConceptualProperty": "Valor em Estoque"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Valor em estoque": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Valor": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_estoque.skus_em_atenção": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Estoque",
+			          "ConceptualProperty": "SKUs em Atenção"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "SKUs em atenção": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_estoque.saídas_un_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Estoque",
+			          "ConceptualProperty": "Saídas (un.)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Saídas (un.)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Saídas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_estoque.entradas_un_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Estoque",
+			          "ConceptualProperty": "Entradas (un.)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Reposições": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_estoque.estoque_mínimo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Estoque",
+			          "ConceptualProperty": "Estoque Mínimo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Mínimo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_estoque.situação": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Estoque",
+			          "ConceptualProperty": "Situação"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Situação": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_clientes.cidade": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Clientes",
+			          "ConceptualProperty": "Cidade"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Cidade": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_clientes.faixa_etaria": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Clientes",
+			          "ConceptualProperty": "Faixa_Etaria"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Faixa etária": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_clientes.nome": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Clientes",
+			          "ConceptualProperty": "Nome"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Cliente": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_metas.meta": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Metas",
+			          "ConceptualProperty": "Meta"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Meta": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_vendedores.nome": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Vendedores",
+			          "ConceptualProperty": "Nome"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Vendedora": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_vendedores.cargo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Vendedores",
+			          "ConceptualProperty": "Cargo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Cargo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.acumulado": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "% Acumulado"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "% acumulado": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.clientes_novos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Clientes Novos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Novas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.clientes_recorrentes": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Clientes Recorrentes"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Recorrentes": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.última_compra_reativar": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Última Compra (reativar)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Última compra": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.dias_sem_comprar_reativar": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Dias sem Comprar (reativar)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Dias": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.gasto_total_reativar": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Gasto Total (reativar)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Já gastou": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.classe_abc": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Classe ABC"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Classe": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.peças_classe_a": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Peças Classe A"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Peças classe A": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.recorrentes": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "% Recorrentes"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Clientes recorrentes": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.clientes_a_reativar": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "Clientes a Reativar"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Clientes a reativar": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    }
+			  }
+			}
+		contentType: json
+

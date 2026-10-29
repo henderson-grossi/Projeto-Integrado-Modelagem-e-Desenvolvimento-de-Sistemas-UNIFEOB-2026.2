@@ -1,0 +1,32 @@
+model Model
+	culture: pt-BR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: pt-BR
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["dim_Calendario","dim_Categorias","dim_Clientes","dim_Produtos","dim_Vendedores","fato_Estoque","fato_Metas","fato_Vendas","Servidor","Banco"]
+
+annotation PBI_ProTooling = ["TMDLView_Desktop","DaxQueryView_Desktop","DevMode"]
+
+ref table dim_Calendario
+ref table DateTableTemplate_28ab7994-68a9-4300-88aa-6f96e594a098
+ref table dim_Categorias
+ref table dim_Clientes
+ref table LocalDateTable_93cbe5c5-61f6-427b-a686-878cf60865ce
+ref table dim_Produtos
+ref table dim_Vendedores
+ref table fato_Estoque
+ref table LocalDateTable_38fb3d86-7226-4f56-99de-4feca561302f
+ref table fato_Metas
+ref table LocalDateTable_b02b0db9-6da0-4faf-99fe-05754723c51a
+ref table fato_Vendas
+ref table LocalDateTable_75d65ee9-f39c-4eef-968e-ec7490f9d3fe
+ref table LocalDateTable_08623cde-8dbd-4896-aca7-e57e0fbf2255
+
+ref cultureInfo pt-BR
+

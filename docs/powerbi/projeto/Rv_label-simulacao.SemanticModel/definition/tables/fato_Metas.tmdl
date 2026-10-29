@@ -1,0 +1,63 @@
+table fato_Metas
+	lineageTag: 88b55a39-0553-43e1-9081-ab22983772eb
+
+	measure Meta = SUM(fato_Metas[Meta_Faturamento])
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+
+	column ID_Categoria
+		dataType: string
+		lineageTag: 4687a35b-ba27-4e7f-a447-2808b51c8e49
+		summarizeBy: none
+		sourceColumn: ID_Categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Mes
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 46739bb0-97ea-4803-a850-b3a60bdaa674
+		summarizeBy: none
+		sourceColumn: Data_Mes
+
+		variation Variation
+			isDefault
+			relationship: a88b8e15-0ac1-49fa-8869-7ff949e9248c
+			defaultHierarchy: LocalDateTable_b02b0db9-6da0-4faf-99fe-05754723c51a.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Ano_Mes
+		dataType: string
+		lineageTag: c452ce3b-7afc-4f28-b593-ce1381da9ac9
+		summarizeBy: none
+		sourceColumn: Ano_Mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column Meta_Faturamento
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: a8aad8a8-6b6e-44ba-b5f2-f396e9a97d2b
+		summarizeBy: sum
+		sourceColumn: Meta_Faturamento
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	partition fato_Metas = m
+		mode: import
+		source =
+				let
+				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
+				    fato_Metas_Table = Fonte{[Schema=Banco,Item="bi_metas"]}[Data],
+				    #"Tipo Alterado" = Table.TransformColumnTypes(fato_Metas_Table,{{"ID_Categoria", type text}, {"Data_Mes", type date}, {"Ano_Mes", type text}, {"Meta_Faturamento", Currency.Type}})
+				in
+				    #"Tipo Alterado"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,169 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "p3_situacao",
+  "position": {
+    "x": 596,
+    "y": 150,
+    "z": 8000,
+    "height": 554,
+    "width": 664,
+    "tabOrder": 8000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_Produtos"
+                    }
+                  },
+                  "Property": "SKU"
+                }
+              },
+              "queryRef": "dim_Produtos.SKU",
+              "nativeQueryRef": "SKU",
+              "displayName": "SKU"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_Produtos"
+                    }
+                  },
+                  "Property": "Produto"
+                }
+              },
+              "queryRef": "dim_Produtos.Produto",
+              "nativeQueryRef": "Produto",
+              "displayName": "Produto"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Estoque"
+                    }
+                  },
+                  "Property": "Estoque Final"
+                }
+              },
+              "queryRef": "fato_Estoque.Estoque Final",
+              "nativeQueryRef": "Estoque Final",
+              "displayName": "Estoque"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Estoque"
+                    }
+                  },
+                  "Property": "Estoque Mínimo"
+                }
+              },
+              "queryRef": "fato_Estoque.Estoque Mínimo",
+              "nativeQueryRef": "Estoque Mínimo",
+              "displayName": "Mínimo"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Estoque"
+                    }
+                  },
+                  "Property": "Situação"
+                }
+              },
+              "queryRef": "fato_Estoque.Situação",
+              "nativeQueryRef": "Situação",
+              "displayName": "Situação"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Estoque"
+                    }
+                  },
+                  "Property": "Valor em Estoque"
+                }
+              },
+              "queryRef": "fato_Estoque.Valor em Estoque",
+              "nativeQueryRef": "Valor em Estoque",
+              "displayName": "Valor"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fato_Estoque"
+                  }
+                },
+                "Property": "Estoque Final"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Situação do estoque por SKU'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

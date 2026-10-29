@@ -1,0 +1,154 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "p5_vendedoras",
+  "position": {
+    "x": 20,
+    "y": 442,
+    "z": 7000,
+    "height": 262,
+    "width": 600,
+    "tabOrder": 7000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_Vendedores"
+                    }
+                  },
+                  "Property": "Nome"
+                }
+              },
+              "queryRef": "dim_Vendedores.Nome",
+              "nativeQueryRef": "Nome",
+              "displayName": "Vendedora"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_Vendedores"
+                    }
+                  },
+                  "Property": "Cargo"
+                }
+              },
+              "queryRef": "dim_Vendedores.Cargo",
+              "nativeQueryRef": "Cargo",
+              "displayName": "Cargo"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Pedidos Entregues"
+                }
+              },
+              "queryRef": "fato_Vendas.Pedidos Entregues",
+              "nativeQueryRef": "Pedidos Entregues",
+              "displayName": "Pedidos"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Faturamento"
+                }
+              },
+              "queryRef": "fato_Vendas.Faturamento",
+              "nativeQueryRef": "Faturamento",
+              "displayName": "Faturamento"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Ticket Médio"
+                }
+              },
+              "queryRef": "fato_Vendas.Ticket Médio",
+              "nativeQueryRef": "Ticket Médio",
+              "displayName": "Ticket médio"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Taxa de Devolução"
+                }
+              },
+              "queryRef": "fato_Vendas.Taxa de Devolução",
+              "nativeQueryRef": "Taxa de Devolução",
+              "displayName": "Devoluções"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fato_Vendas"
+                  }
+                },
+                "Property": "Faturamento"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Desempenho da equipe'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Rv_label-simulacao"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "7a802a7a-d7f2-4d72-ae52-6afa9402cdc7"
+  }
+}

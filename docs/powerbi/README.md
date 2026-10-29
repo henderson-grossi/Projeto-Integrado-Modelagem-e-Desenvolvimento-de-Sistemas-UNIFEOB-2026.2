@@ -1,8 +1,18 @@
 # Dashboard de vendas (Power BI)
 
-O dashboard (`Rv_label-simulacao.pbix`, 5 páginas: Visão Geral, Vendas, Estoque, Clientes, Metas e Equipe) lê o banco
-da loja, `Rv_Label`, pelas views `bi_*`. Elas devolvem as mesmas colunas que o modelo do Power BI espera, então
-mudar o banco por dentro não quebra o relatório. As views são criadas pela migração `api/migracoes/003-painel-bi-views.sql`.
+O dashboard tem 6 páginas: Visão Geral, Vendas, Estoque, Clientes, Metas e Equipe, e Produtos e Clientes (curva ABC,
+rentabilidade por peça, clientes novas x recorrentes e clientes para reativar). Botões com ícone sob o título levam de uma
+página a outra (no Power BI Desktop, durante a edição, é Ctrl + clique). Ele lê o banco da loja, `Rv_Label`, pelas views
+`bi_*`. Elas devolvem as mesmas colunas que o modelo do Power BI espera, então mudar o banco por dentro não quebra o
+relatório. As views são criadas pela migração `api/migracoes/003-painel-bi-views.sql`.
+
+## Arquivos
+- `projeto/Rv_label-simulacao.pbip`: o dashboard em formato de projeto (texto), sem dados dentro. Abra no Power BI
+  Desktop e clique em *Atualizar*. Para mandar a alguém, *Arquivo > Salvar como* `.pbix` (o `.pbix` leva os dados
+  junto, inclusive nomes de clientes, por isso não fica no git).
+- `gerar_dashboard.py`: gera as páginas, o tema, as imagens de fundo e as medidas do projeto. Mudanças de layout são feitas
+  nele: `python -I docs/powerbi/gerar_dashboard.py docs/powerbi/projeto` (precisa de Pillow e das fontes Segoe do Windows).
+- `dados-simulados.sql`: dados de demonstração (abaixo).
 
 | View | Tabela no modelo | O que tem |
 |---|---|---|

@@ -1,0 +1,61 @@
+relationship 4fc5c29e-d319-4c01-a77d-5648b053ad8f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_Clientes.Data_Cadastro
+	toColumn: LocalDateTable_93cbe5c5-61f6-427b-a686-878cf60865ce.Date
+
+relationship d36f065d-6327-4478-aa9e-bca7429ccd12
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_Estoque.Data_Mes
+	toColumn: LocalDateTable_38fb3d86-7226-4f56-99de-4feca561302f.Date
+
+relationship a88b8e15-0ac1-49fa-8869-7ff949e9248c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_Metas.Data_Mes
+	toColumn: LocalDateTable_b02b0db9-6da0-4faf-99fe-05754723c51a.Date
+
+relationship ebdffc38-75ff-4e21-b0cc-f66f7261e83e
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_Vendas.Data
+	toColumn: LocalDateTable_75d65ee9-f39c-4eef-968e-ec7490f9d3fe.Date
+
+relationship AutoDetected_cc25ac70-6b89-4b84-ab13-4794f60e2553
+	fromColumn: dim_Produtos.ID_Categoria
+	toColumn: dim_Categorias.ID_Categoria
+
+relationship AutoDetected_3c6290a3-f7b3-4a28-92df-6c93611aca46
+	fromColumn: fato_Metas.ID_Categoria
+	toColumn: dim_Categorias.ID_Categoria
+
+relationship AutoDetected_81b97f95-5656-400b-87e0-2cc792d2dbcb
+	fromColumn: fato_Vendas.ID_Cliente
+	toColumn: dim_Clientes.ID_Cliente
+
+relationship AutoDetected_cdf2bb67-d6eb-4444-b7c3-863cac0d297b
+	fromColumn: fato_Estoque.ID_Produto
+	toColumn: dim_Produtos.ID_Produto
+
+relationship AutoDetected_705158b6-a2f4-44df-9b9f-515f0db01547
+	fromColumn: fato_Vendas.ID_Produto
+	toColumn: dim_Produtos.ID_Produto
+
+relationship AutoDetected_62f63340-518d-4d09-9a72-d81a05b64f04
+	fromColumn: fato_Vendas.ID_Vendedor
+	toColumn: dim_Vendedores.ID_Vendedor
+
+relationship rel_vendas_calendario
+	fromColumn: fato_Vendas.Data
+	toColumn: dim_Calendario.Data
+
+relationship rel_estoque_calendario
+	fromColumn: fato_Estoque.Data_Mes
+	toColumn: dim_Calendario.Data
+
+relationship rel_metas_calendario
+	fromColumn: fato_Metas.Data_Mes
+	toColumn: dim_Calendario.Data
+
+relationship 5f0c858f-d41d-471e-9879-2120a30d2a07
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_Vendedores.Data_Admissao
+	toColumn: LocalDateTable_08623cde-8dbd-4896-aca7-e57e0fbf2255.Date
+

@@ -1,0 +1,144 @@
+table fato_Estoque
+	lineageTag: 78809ee8-353a-42d6-8b43-8c881604532c
+
+	measure 'Valor em Estoque' = CALCULATE(SUM(fato_Estoque[Valor_Estoque_Final]), LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque))))
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+
+	measure 'Entradas (un.)' = SUM(fato_Estoque[Entradas])
+		formatString: #,0
+
+	measure 'Saídas (un.)' = SUM(fato_Estoque[Saidas])
+		formatString: #,0
+
+	measure 'SKUs em Atenção' = CALCULATE(COUNTROWS(fato_Estoque), fato_Estoque[Status_Estoque] <> "OK", LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque)))) + 0
+		formatString: 0
+
+	measure 'Estoque Mínimo' = CALCULATE(SUM(fato_Estoque[Estoque_Minimo]), LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque))))
+		formatString: 0
+
+	measure 'Situação' = VAR e = [Estoque Final] VAR m = [Estoque Mínimo] RETURN IF(ISBLANK(e), BLANK(), IF(e < m, "Abaixo do mínimo", IF(e <= 2 * m, "Atenção", "OK")))
+
+	measure 'Estoque Final' = CALCULATE(SUM(fato_Estoque[Estoque_Final]), LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque))))
+		formatString: 0
+		lineageTag: 8e6de693-5c9a-4e1c-995c-e723bcb5a397
+
+	column ID_Produto
+		dataType: string
+		lineageTag: 517f98f9-c8dc-4531-86bd-bc16413076a8
+		summarizeBy: none
+		sourceColumn: ID_Produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Mes
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: eb242a82-a8d3-4fe7-bcd0-ff0bfc770239
+		summarizeBy: none
+		sourceColumn: Data_Mes
+
+		variation Variation
+			isDefault
+			relationship: d36f065d-6327-4478-aa9e-bca7429ccd12
+			defaultHierarchy: LocalDateTable_38fb3d86-7226-4f56-99de-4feca561302f.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Ano_Mes
+		dataType: string
+		lineageTag: a4f745d6-c9db-492a-85e6-900ad3209a3c
+		summarizeBy: none
+		sourceColumn: Ano_Mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column Estoque_Inicial
+		dataType: int64
+		formatString: 0
+		lineageTag: ccc4dcb4-4f1e-44a6-8e58-4222e645cdfc
+		summarizeBy: sum
+		sourceColumn: Estoque_Inicial
+
+		annotation SummarizationSetBy = Automatic
+
+	column Entradas
+		dataType: int64
+		formatString: 0
+		lineageTag: 29e55287-1190-409a-8f36-c428d81580ea
+		summarizeBy: sum
+		sourceColumn: Entradas
+
+		annotation SummarizationSetBy = Automatic
+
+	column Saidas
+		dataType: int64
+		formatString: 0
+		lineageTag: 87ddf791-afc6-4737-bf74-1754ac38cc88
+		summarizeBy: sum
+		sourceColumn: Saidas
+
+		annotation SummarizationSetBy = Automatic
+
+	column Estoque_Final
+		dataType: int64
+		formatString: 0
+		lineageTag: 8775630c-8ba5-47fc-a96c-96476e6751e9
+		summarizeBy: sum
+		sourceColumn: Estoque_Final
+
+		annotation SummarizationSetBy = Automatic
+
+	column Estoque_Minimo
+		dataType: int64
+		formatString: 0
+		lineageTag: c80af4a5-c1ab-477e-b2af-79ceb973e9c6
+		summarizeBy: sum
+		sourceColumn: Estoque_Minimo
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status_Estoque
+		dataType: string
+		lineageTag: 47aacdba-bfd5-4815-ac94-685b84d69ab5
+		summarizeBy: none
+		sourceColumn: Status_Estoque
+
+		annotation SummarizationSetBy = Automatic
+
+	column Valor_Estoque_Final
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 7641ba61-461e-4e98-bb50-cd44af074fc9
+		summarizeBy: sum
+		sourceColumn: Valor_Estoque_Final
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column custo
+		dataType: double
+		lineageTag: 5ba37d96-5df3-467b-bcbb-d485a98dd8d9
+		summarizeBy: sum
+		sourceColumn: custo
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fato_Estoque = m
+		mode: import
+		source =
+				let
+				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
+				    fato_Estoque_Table = Fonte{[Schema=Banco,Item="bi_estoque"]}[Data],
+				    #"Tipo Alterado" = Table.TransformColumnTypes(fato_Estoque_Table,{{"ID_Produto", type text}, {"Data_Mes", type date}, {"Ano_Mes", type text}, {"Estoque_Inicial", Int64.Type}, {"Entradas", Int64.Type}, {"Saidas", Int64.Type}, {"Estoque_Final", Int64.Type}, {"Estoque_Minimo", Int64.Type}, {"Status_Estoque", type text}, {"Valor_Estoque_Final", Currency.Type}})
+				in
+				    #"Tipo Alterado"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

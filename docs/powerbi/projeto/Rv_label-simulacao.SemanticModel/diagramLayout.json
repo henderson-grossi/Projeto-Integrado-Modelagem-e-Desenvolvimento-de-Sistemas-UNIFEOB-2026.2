@@ -1,0 +1,126 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 2
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1313.4329767665363,
+            "y": 277.8360205580438
+          },
+          "nodeIndex": "dim_Calendario",
+          "nodeLineageTag": "c3a1bd2b-d72b-460e-b615-a2b6cc9a5e9b",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 334.21106555018804,
+            "y": 299.01406068616939
+          },
+          "nodeIndex": "dim_Categorias",
+          "nodeLineageTag": "81465ba1-c4a7-4e36-84d1-b8a71f5f389b",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1079.4329767665361,
+            "y": 278.64183757628211
+          },
+          "nodeIndex": "dim_Clientes",
+          "nodeLineageTag": "9ec8374c-0af4-4ca2-8dc3-ad7742dab16f",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 632.375116898347,
+            "y": 137.90074123016041
+          },
+          "nodeIndex": "dim_Produtos",
+          "nodeLineageTag": "3d584eab-5562-4d0b-8b3e-f468c6cada8f",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 921.79189904678719,
+            "y": -50
+          },
+          "nodeIndex": "dim_Vendedores",
+          "nodeLineageTag": "837ce417-192b-4f42-bc17-e7c9a8f75990",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 263.25389670078926,
+            "y": 505.6720411160876
+          },
+          "nodeIndex": "fato_Estoque",
+          "nodeLineageTag": "78809ee8-353a-42d6-8b43-8c881604532c",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 184.06946320323806
+          },
+          "nodeIndex": "fato_Metas",
+          "nodeLineageTag": "88b55a39-0553-43e1-9081-ab22983772eb",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 793.429476563824,
+            "y": 492.17474932110724
+          },
+          "nodeIndex": "fato_Vendas",
+          "nodeLineageTag": "bf4a1135-fa47-465e-9de0-3437209b240d",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas as tabelas",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas as tabelas",
+  "defaultDiagram": "Todas as tabelas"
+}

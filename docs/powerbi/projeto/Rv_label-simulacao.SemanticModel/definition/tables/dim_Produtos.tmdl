@@ -1,0 +1,124 @@
+table dim_Produtos
+	lineageTag: 3d584eab-5562-4d0b-8b3e-f468c6cada8f
+
+	column ID_Produto
+		dataType: string
+		lineageTag: 6cffbf43-31ff-4ee0-bffe-99f5d519d60d
+		summarizeBy: none
+		sourceColumn: ID_Produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column SKU
+		dataType: string
+		lineageTag: 1fdde04d-17e2-40ce-8f85-0c4658cadf28
+		summarizeBy: none
+		sourceColumn: SKU
+
+		annotation SummarizationSetBy = Automatic
+
+	column Produto
+		dataType: string
+		lineageTag: a12b65e9-8737-485d-9585-705da4adf86d
+		summarizeBy: none
+		sourceColumn: Produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cor
+		dataType: string
+		lineageTag: 3cb22fb3-860a-45a5-8fa7-f02beb299f6c
+		summarizeBy: none
+		sourceColumn: Cor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tamanho
+		dataType: string
+		lineageTag: f395428f-b1ae-4ef7-b540-c14a6d40de6f
+		summarizeBy: none
+		sourceColumn: Tamanho
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Categoria
+		dataType: string
+		lineageTag: f7db7feb-f82c-49d2-9d88-dd315835a1e3
+		summarizeBy: none
+		sourceColumn: ID_Categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column Preco_Venda
+		dataType: decimal
+		formatString: "R$"\ #,0.###############;-"R$"\ #,0.###############;"R$"\ #,0.###############
+		lineageTag: 7642b96a-4d3b-4826-8623-8fe4633521ac
+		summarizeBy: sum
+		sourceColumn: Preco_Venda
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Custo_Unitario
+		dataType: decimal
+		formatString: "R$"\ #,0.###############;-"R$"\ #,0.###############;"R$"\ #,0.###############
+		lineageTag: 302345a0-1249-4dd2-8cf2-dc0a96d65c37
+		summarizeBy: sum
+		sourceColumn: Custo_Unitario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Margem_Valor
+		dataType: decimal
+		formatString: "R$"\ #,0.###############;-"R$"\ #,0.###############;"R$"\ #,0.###############
+		lineageTag: 5624de2d-ec27-4c24-b639-5f32000a9c08
+		summarizeBy: sum
+		sourceColumn: Margem_Valor
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Margem_Perc
+		dataType: double
+		lineageTag: bf561dfd-b2ed-464a-a33a-045ecfce2062
+		summarizeBy: sum
+		sourceColumn: Margem_Perc
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Ativo
+		dataType: string
+		lineageTag: 2f402cc6-d345-4377-ba65-fdff5921a924
+		summarizeBy: none
+		sourceColumn: Ativo
+
+		annotation SummarizationSetBy = Automatic
+
+	column Codigo_Catalogo
+		dataType: string
+		lineageTag: a1a5ba0d-db82-4dde-aa55-060df18cf06f
+		summarizeBy: none
+		sourceColumn: Codigo_Catalogo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_Produtos = m
+		mode: import
+		source =
+				let
+				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
+				    dim_Produtos_Table = Fonte{[Schema=Banco,Item="bi_produtos"]}[Data],
+				    #"Tipo Alterado" = Table.TransformColumnTypes(dim_Produtos_Table,{{"ID_Produto", type text}, {"SKU", type text}, {"Produto", type text}, {"Cor", type text}, {"Tamanho", type text}, {"ID_Categoria", type text}, {"Preco_Venda", Currency.Type}, {"Custo_Unitario", Currency.Type}, {"Margem_Valor", Currency.Type}, {"Margem_Perc", Percentage.Type}, {"Ativo", type text}, {"Codigo_Catalogo", type text}})
+				in
+				    #"Tipo Alterado"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

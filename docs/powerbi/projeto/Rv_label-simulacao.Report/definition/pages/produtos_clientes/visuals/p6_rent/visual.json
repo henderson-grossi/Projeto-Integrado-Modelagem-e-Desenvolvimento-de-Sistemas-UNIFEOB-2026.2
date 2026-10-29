@@ -1,0 +1,139 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "p6_rent",
+  "position": {
+    "x": 780,
+    "y": 150,
+    "z": 7000,
+    "height": 262,
+    "width": 480,
+    "tabOrder": 7000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_Produtos"
+                    }
+                  },
+                  "Property": "SKU"
+                }
+              },
+              "queryRef": "dim_Produtos.SKU",
+              "nativeQueryRef": "SKU",
+              "displayName": "Peça"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Itens Vendidos"
+                }
+              },
+              "queryRef": "fato_Vendas.Itens Vendidos",
+              "nativeQueryRef": "Itens Vendidos",
+              "displayName": "Itens"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Lucro Total"
+                }
+              },
+              "queryRef": "fato_Vendas.Lucro Total",
+              "nativeQueryRef": "Lucro Total",
+              "displayName": "Lucro"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Margem %"
+                }
+              },
+              "queryRef": "fato_Vendas.Margem %",
+              "nativeQueryRef": "Margem %",
+              "displayName": "Margem"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Classe ABC"
+                }
+              },
+              "queryRef": "fato_Vendas.Classe ABC",
+              "nativeQueryRef": "Classe ABC",
+              "displayName": "Classe"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fato_Vendas"
+                  }
+                },
+                "Property": "Lucro Total"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Rentabilidade por peça'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,39 @@
+table dim_Categorias
+	lineageTag: 81465ba1-c4a7-4e36-84d1-b8a71f5f389b
+
+	column ID_Categoria
+		dataType: string
+		lineageTag: 6e406135-204f-4ab4-b80b-292b3464f476
+		summarizeBy: none
+		sourceColumn: ID_Categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column Categoria
+		dataType: string
+		lineageTag: e70cfcab-7621-4628-ba80-8f751fa309a9
+		summarizeBy: none
+		sourceColumn: Categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ordem
+		dataType: int64
+		formatString: 0
+		lineageTag: 9f8f3425-b3e2-499d-b594-d1eac0040e0f
+		summarizeBy: sum
+		sourceColumn: Ordem
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_Categorias = m
+		mode: import
+		source =
+				let
+				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
+				    dim_Categorias_Table = Fonte{[Schema=Banco,Item="bi_categorias"]}[Data]
+				in
+				    dim_Categorias_Table
+
+	annotation PBI_ResultType = Exception
+

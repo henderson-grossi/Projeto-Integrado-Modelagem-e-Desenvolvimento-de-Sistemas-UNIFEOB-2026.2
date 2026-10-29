@@ -1,0 +1,302 @@
+table fato_Vendas
+	lineageTag: bf4a1135-fa47-465e-9de0-3437209b240d
+
+	measure 'Pedidos Entregues' = CALCULATE([Pedidos], fato_Vendas[Status_Pedido] = "Entregue")
+		formatString: 0
+
+	measure 'Itens Vendidos' = CALCULATE(SUM(fato_Vendas[Quantidade]), fato_Vendas[Status_Pedido] = "Entregue")
+		formatString: #,0
+
+	measure 'Clientes Ativos' = CALCULATE(DISTINCTCOUNT(fato_Vendas[ID_Cliente]), fato_Vendas[Status_Pedido] = "Entregue")
+		formatString: 0
+
+	measure 'Pedidos por Cliente' = DIVIDE([Pedidos Entregues], [Clientes Ativos])
+		formatString: 0.0
+
+	measure 'Desconto Concedido' = CALCULATE(SUM(fato_Vendas[Valor_Desconto]), fato_Vendas[Status_Pedido] = "Entregue")
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+
+	measure 'Taxa de Cancelamento' = DIVIDE(CALCULATE(COUNTROWS(fato_Vendas), fato_Vendas[Status_Pedido] = "Cancelado"), COUNTROWS(fato_Vendas))
+		formatString: 0.0%;-0.0%;0.0%
+
+	measure '% Acumulado' = VAR f = [Faturamento] VAR tot = CALCULATE([Faturamento], ALLSELECTED(dim_Produtos)) RETURN IF(NOT ISBLANK(f), DIVIDE(SUMX(FILTER(ALLSELECTED(dim_Produtos), [Faturamento] >= f), [Faturamento]), tot))
+		formatString: 0.0%;-0.0%;0.0%
+
+	measure 'Classe ABC' = VAR p = [% Acumulado] RETURN IF(ISBLANK(p), BLANK(), IF(p <= 0.8, "A", IF(p <= 0.95, "B", "C")))
+
+	measure 'Peças Classe A' = COUNTROWS(FILTER(ALLSELECTED(dim_Produtos), [Classe ABC] = "A")) + 0
+		formatString: 0
+
+	measure 'Clientes Novos' = VAR ini = MIN(dim_Calendario[Data]) RETURN COUNTROWS(FILTER(CALCULATETABLE(VALUES(fato_Vendas[ID_Cliente]), fato_Vendas[Status_Pedido] = "Entregue"), CALCULATE(MIN(fato_Vendas[Data]), ALL(dim_Calendario), fato_Vendas[Status_Pedido] = "Entregue") >= ini)) + 0
+		formatString: 0
+
+	measure 'Clientes Recorrentes' = [Clientes Ativos] - [Clientes Novos]
+		formatString: 0
+
+	measure '% Recorrentes' = DIVIDE([Clientes Recorrentes], [Clientes Ativos])
+		formatString: 0.0%;-0.0%;0.0%
+
+	measure '% Recompra' = DIVIDE(COUNTROWS(FILTER(CALCULATETABLE(VALUES(fato_Vendas[ID_Cliente]), fato_Vendas[Status_Pedido] = "Entregue"), CALCULATE([Pedidos Entregues]) >= 2)), [Clientes Ativos])
+		formatString: 0.0%;-0.0%;0.0%
+
+	measure 'Última Compra' = CALCULATE(MAX(fato_Vendas[Data]), ALL(dim_Calendario), fato_Vendas[Status_Pedido] = "Entregue")
+		formatString: dd/mm/yyyy
+
+	measure 'Dias sem Comprar' = VAR u = [Última Compra] RETURN IF(NOT ISBLANK(u), DATEDIFF(u, CALCULATE(MAX(fato_Vendas[Data]), ALL(fato_Vendas)), DAY))
+		formatString: 0
+
+	measure 'Clientes a Reativar' = COUNTROWS(FILTER(VALUES(dim_Clientes[ID_Cliente]), [Dias sem Comprar] >= 90)) + 0
+		formatString: 0
+
+	measure 'Última Compra (reativar)' = IF([Dias sem Comprar] >= 90, [Última Compra])
+		formatString: dd/mm/yyyy
+
+	measure 'Dias sem Comprar (reativar)' = IF([Dias sem Comprar] >= 90, [Dias sem Comprar])
+		formatString: 0
+
+	measure 'Gasto Total (reativar)' = IF([Dias sem Comprar] >= 90, CALCULATE([Faturamento], ALL(dim_Calendario)))
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+
+	measure Faturamento = CALCULATE(SUM(fato_Vendas[Valor_Liquido]), fato_Vendas[Status_Pedido] = "Entregue")
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 1ad86c7b-269e-4be7-ab59-4061ca923032
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure 'Lucro Total' = CALCULATE(SUM(fato_Vendas[Lucro]), fato_Vendas[Status_Pedido] = "Entregue")
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: e1bafd7b-e721-4672-8a00-ed8d2e1b8110
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure Pedidos = DISTINCTCOUNT(fato_Vendas[ID_Pedido])
+		formatString: 0
+		lineageTag: d28754b4-8f4f-43c1-a957-625593d837d0
+
+	measure 'Atingimento da Meta %' = DIVIDE([Faturamento], SUM(fato_Metas[Meta_Faturamento]))
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 22d6e272-4e8e-4c08-a632-4a35034bd006
+
+	measure 'Crescimento Mensal %' = DIVIDE([Faturamento] - [Faturamento Mês Anterior], [Faturamento Mês Anterior])
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 07ce70cf-cc93-44a8-99be-2051bfc06419
+
+	measure 'Faturamento Mês Anterior' = CALCULATE([Faturamento], DATEADD(dim_Calendario[Data], -1, MONTH))
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: ed6feab4-5e23-4df4-b2a6-b45a5fb18a01
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure 'Taxa de Devolução' = DIVIDE(CALCULATE(COUNTROWS(fato_Vendas), fato_Vendas[Status_Pedido] = "Devolvido"), COUNTROWS(fato_Vendas))
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: e5ec09b5-19d6-4ef6-b573-3985bcfac388
+
+	measure 'Ticket Médio' = DIVIDE([Faturamento], CALCULATE([Pedidos], fato_Vendas[Status_Pedido] = "Entregue"))
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 4d3658ad-8dde-4090-8d2a-4fdbda8ca1e4
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure 'Margem %' = DIVIDE([Lucro Total], [Faturamento])
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: df628e04-8695-44d5-9206-fe22a1163820
+
+	column ID_Venda
+		dataType: string
+		lineageTag: 9d7322f8-fda2-4e10-b2b1-dedac2e30c77
+		summarizeBy: none
+		sourceColumn: ID_Venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Pedido
+		dataType: string
+		lineageTag: d72b82bd-8b3f-4abc-8298-d841688a6936
+		summarizeBy: none
+		sourceColumn: ID_Pedido
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: d7d54685-b8af-4192-801c-36676421e531
+		summarizeBy: none
+		sourceColumn: Data
+
+		variation Variation
+			isDefault
+			relationship: ebdffc38-75ff-4e21-b0cc-f66f7261e83e
+			defaultHierarchy: LocalDateTable_75d65ee9-f39c-4eef-968e-ec7490f9d3fe.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ID_Cliente
+		dataType: string
+		lineageTag: d15c0c6c-62f2-4f9d-9aaa-4801f469f37a
+		summarizeBy: none
+		sourceColumn: ID_Cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Produto
+		dataType: string
+		lineageTag: 377f41a6-89a4-41f6-834e-031d708f1181
+		summarizeBy: none
+		sourceColumn: ID_Produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Vendedor
+		dataType: string
+		lineageTag: 658d13b7-76b6-442c-817f-bc1b73ba7118
+		summarizeBy: none
+		sourceColumn: ID_Vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Canal_Venda
+		dataType: string
+		lineageTag: 54814aed-7804-4c7f-bf30-8f9137c58555
+		summarizeBy: none
+		sourceColumn: Canal_Venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column Forma_Pagamento
+		dataType: string
+		lineageTag: 6bf2483d-8078-4d82-b1a3-632721a5889f
+		summarizeBy: none
+		sourceColumn: Forma_Pagamento
+
+		annotation SummarizationSetBy = Automatic
+
+	column Parcelas
+		dataType: int64
+		formatString: 0
+		lineageTag: 83999307-958a-4fa5-9bb5-f66eb3a9d2e1
+		summarizeBy: sum
+		sourceColumn: Parcelas
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status_Pedido
+		dataType: string
+		lineageTag: 44768113-728f-4ba7-a4a3-cd7c82dcd10b
+		summarizeBy: none
+		sourceColumn: Status_Pedido
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantidade
+		dataType: int64
+		formatString: 0
+		lineageTag: d672e58e-1a7b-4e9a-b7b2-e162177572f1
+		summarizeBy: sum
+		sourceColumn: Quantidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column Preco_Unitario
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: b4782254-f116-4d4c-a794-47b2f37a9e91
+		summarizeBy: sum
+		sourceColumn: Preco_Unitario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Desconto_Perc
+		dataType: double
+		lineageTag: 1b8ca3eb-9f19-44c2-9277-bc83fe989917
+		summarizeBy: sum
+		sourceColumn: Desconto_Perc
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Custo_Unitario
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: a2e8ce94-810f-46e7-974d-67a23bed4ec5
+		summarizeBy: sum
+		sourceColumn: Custo_Unitario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Valor_Bruto
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 8d45b518-a5a5-4e16-8c73-22f202e130cf
+		summarizeBy: sum
+		sourceColumn: Valor_Bruto
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Valor_Desconto
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 7035ff82-8205-49c7-a2df-8beb32a1d6b4
+		summarizeBy: sum
+		sourceColumn: Valor_Desconto
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Valor_Liquido
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 1efdc86d-0124-4c4d-b746-aacec2c3c4c5
+		summarizeBy: sum
+		sourceColumn: Valor_Liquido
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Custo_Total
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: c5f586c8-588a-43c1-9a99-978225c6c86d
+		summarizeBy: sum
+		sourceColumn: Custo_Total
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Lucro
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 6bfbf44a-278a-4f62-925f-ab78a12fe9bb
+		summarizeBy: sum
+		sourceColumn: Lucro
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	partition fato_Vendas = m
+		mode: import
+		source =
+				let
+				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
+				    fato_Vendas_Table = Fonte{[Schema=Banco,Item="bi_vendas"]}[Data],
+				    #"Tipo Alterado" = Table.TransformColumnTypes(fato_Vendas_Table,{{"ID_Venda", type text}, {"ID_Pedido", type text}, {"Data", type date}, {"ID_Cliente", type text}, {"ID_Produto", type text}, {"ID_Vendedor", type text}, {"Canal_Venda", type text}, {"Forma_Pagamento", type text}, {"Parcelas", Int64.Type}, {"Status_Pedido", type text}, {"Quantidade", Int64.Type}, {"Preco_Unitario", Currency.Type}, {"Desconto_Perc", Percentage.Type}, {"Custo_Unitario", Currency.Type}, {"Valor_Bruto", Currency.Type}, {"Valor_Desconto", Currency.Type}, {"Valor_Liquido", Currency.Type}, {"Custo_Total", Currency.Type}, {"Lucro", Currency.Type}})
+				in
+				    #"Tipo Alterado"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

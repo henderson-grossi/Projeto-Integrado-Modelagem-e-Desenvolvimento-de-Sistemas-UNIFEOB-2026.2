@@ -1,0 +1,179 @@
+table dim_Calendario
+	lineageTag: c3a1bd2b-d72b-460e-b615-a2b6cc9a5e9b
+	dataCategory: Time
+
+	measure 'Período' = LOWER(FORMAT(MIN(dim_Calendario[Data]), "mmm/yyyy") & " a " & FORMAT(MAX(dim_Calendario[Data]), "mmm/yyyy"))
+
+	column Data
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: cfc0497d-4e16-4480-82f0-a15559334a1a
+		summarizeBy: none
+		sourceColumn: Data
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Ano
+		dataType: int64
+		formatString: 0
+		lineageTag: d83b463d-d814-4f78-b6b9-b49cf740b0dd
+		summarizeBy: sum
+		sourceColumn: Ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column Trimestre_Num
+		dataType: int64
+		formatString: 0
+		lineageTag: e2670f39-e5db-4ed4-8d16-91cad0a79a9c
+		summarizeBy: sum
+		sourceColumn: Trimestre_Num
+
+		annotation SummarizationSetBy = Automatic
+
+	column Trimestre
+		dataType: string
+		lineageTag: b15fbc1e-e92d-42d3-8317-6abe322103bb
+		summarizeBy: none
+		sourceColumn: Trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mes_Num
+		dataType: int64
+		formatString: 0
+		lineageTag: 2c60db9b-4780-4ef0-9b66-b3e0c6d82225
+		summarizeBy: sum
+		sourceColumn: Mes_Num
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mes_Nome
+		dataType: string
+		lineageTag: 7ff0f445-18c7-49fc-8a85-ed89a4fffd90
+		summarizeBy: none
+		sourceColumn: Mes_Nome
+		sortByColumn: Mes_Num
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mes_Abrev
+		dataType: string
+		lineageTag: 11a6cf54-a812-4a52-8503-92c6e8bb43fc
+		summarizeBy: none
+		sourceColumn: Mes_Abrev
+		sortByColumn: Mes_Num
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ano_Mes
+		dataType: string
+		lineageTag: 7c2344b5-b866-4463-8e87-b6ba9b1eb5da
+		summarizeBy: none
+		sourceColumn: Ano_Mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dia
+		dataType: int64
+		formatString: 0
+		lineageTag: 0967fb13-08cb-49c8-9c73-96d7675d77f1
+		summarizeBy: sum
+		sourceColumn: Dia
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dia_Semana_Num
+		dataType: int64
+		formatString: 0
+		lineageTag: 3518e7bb-946d-4252-a4dc-940da995b850
+		summarizeBy: sum
+		sourceColumn: Dia_Semana_Num
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dia_Semana
+		dataType: string
+		lineageTag: 1208a3a9-26b0-468a-98fe-55639b00c139
+		summarizeBy: none
+		sourceColumn: Dia_Semana
+		sortByColumn: Dia_Semana_Num
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Semana_Ano
+		dataType: int64
+		formatString: 0
+		lineageTag: 39514326-3240-415b-b3c9-ba677cfd5f36
+		summarizeBy: sum
+		sourceColumn: Semana_Ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fim_de_Semana
+		dataType: string
+		lineageTag: 361933a6-326f-4a9b-9b9a-f1ccf6e4d404
+		summarizeBy: none
+		sourceColumn: Fim_de_Semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ano_Trimestre
+		dataType: string
+		lineageTag: 4fbb8d5f-bd8e-4259-9a6c-4c196aaa707f
+		summarizeBy: none
+		sourceColumn: Ano_Trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column Semestre
+		dataType: string
+		lineageTag: 295bad73-06dd-4ceb-9fb3-cee68abd9741
+		summarizeBy: none
+		sourceColumn: Semestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ano_Mes_Num
+		dataType: int64
+		formatString: 0
+		lineageTag: ddec62b6-9907-4f38-a107-44bbb468317d
+		summarizeBy: sum
+		sourceColumn: Ano_Mes_Num
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mes_Ano
+		dataType: string
+		lineageTag: 57326226-47c8-4ca8-be41-460b375c861d
+		summarizeBy: none
+		sourceColumn: Mes_Ano
+		sortByColumn: Ano_Mes_Num
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_Calendario = m
+		mode: import
+		source =
+				let
+				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
+				    dim_Calendario_Table = Fonte{[Schema=Banco,Item="bi_calendario"]}[Data],
+				    #"Tipo Alterado" = Table.TransformColumnTypes(dim_Calendario_Table,{{"Data", type date}, {"Ano", Int64.Type}, {"Trimestre_Num", Int64.Type}, {"Trimestre", type text}, {"Mes_Num", Int64.Type}, {"Mes_Nome", type text}, {"Mes_Abrev", type text}, {"Ano_Mes", type text}, {"Dia", Int64.Type}, {"Dia_Semana_Num", Int64.Type}, {"Dia_Semana", type text}, {"Semana_Ano", Int64.Type}, {"Fim_de_Semana", type text}, {"Ano_Trimestre", type text}, {"Semestre", type text}, {"Ano_Mes_Num", Int64.Type}, {"Mes_Ano", type text}})
+				in
+				    #"Tipo Alterado"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

@@ -27,6 +27,7 @@ test.before(async () => {
     password: process.env.DB_PASSWORD || '',
     multipleStatements: true,
   });
+  await con.query('SET SESSION sql_require_primary_key = ON'); // igual ao MySQL da nuvem (Render)
   await con.query(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8').replaceAll('Rv_Label', BANCO));
   await con.query(`USE \`${BANCO}\``);
 });

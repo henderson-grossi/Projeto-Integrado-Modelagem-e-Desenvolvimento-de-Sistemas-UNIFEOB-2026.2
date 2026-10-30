@@ -3,7 +3,8 @@
 -- catálogo e a repetida é apagada. Só age quando as duas existem: num banco sem repetidas não faz nada.
 -- O dashboard mostrava as duas no filtro de Categoria (Blusa e Blusas, Body e Bodys...).
 
-CREATE TEMPORARY TABLE categoria_de_para AS
+-- Com chave primária: o MySQL da nuvem exige (sql_require_primary_key), até em tabela temporária.
+CREATE TEMPORARY TABLE categoria_de_para (de INT NOT NULL PRIMARY KEY, para INT NOT NULL)
 SELECT de.id_categoria AS de, para.id_categoria AS para
 FROM categoria de
 JOIN categoria para ON (de.nome, para.nome) IN

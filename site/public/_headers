@@ -1,0 +1,10 @@
+# Cabeçalhos de segurança (Netlify e Cloudflare Pages leem este arquivo; o build copia para dist/).
+# connect-src: o site só conversa com ele mesmo e com a API no Render. API em outro endereço? Troque o
+# https://*.onrender.com abaixo pelo endereço dela, senão o catálogo e os pedidos param de carregar.
+# style-src 'unsafe-inline': o <noscript> do index.html tem um <style>; scripts continuam só do próprio site.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.onrender.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()

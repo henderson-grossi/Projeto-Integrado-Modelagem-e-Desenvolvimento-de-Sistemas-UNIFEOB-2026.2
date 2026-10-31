@@ -16,9 +16,12 @@ const MAX_TENTATIVAS = 5;
 function bloqueado(ip) {
   const agora = Date.now();
   const lista = (tentativas.get(ip) ?? []).filter((t) => agora - t < JANELA_MS);
-  tentativas.set(ip, lista);
+  if (lista.length) tentativas.set(ip, lista);
+  else tentativas.delete(ip); // IP sem erro recente não ocupa memória
   return lista.length >= MAX_TENTATIVAS;
 }
+// Sem a faxina, IP que errou uma vez e não voltou ficaria no mapa para sempre.
+setInterval(() => { for (const ip of tentativas.keys()) bloqueado(ip); }, JANELA_MS).unref();
 
 async function login(ip, email, senha) {
   if (bloqueado(ip)) return { status: 429, erro: 'Muitas tentativas. Aguarde alguns minutos.' };
@@ -28,7 +31,7 @@ async function login(ip, email, senha) {
   const hash = adm?.senha?.startsWith('$2') ? adm.senha : '$2a$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidi';
   const ok = await bcrypt.compare(String(senha ?? ''), hash);
   if (!adm || !ok) {
-    tentativas.get(ip).push(Date.now());
+    tentativas.set(ip, [...(tentativas.get(ip) ?? []), Date.now()]);
     return { status: 401, erro: 'E-mail ou senha incorretos.' };
   }
   tentativas.delete(ip);

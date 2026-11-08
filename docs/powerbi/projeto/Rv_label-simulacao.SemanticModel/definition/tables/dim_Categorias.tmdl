@@ -31,9 +31,12 @@ table dim_Categorias
 		source =
 				let
 				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
-				    dim_Categorias_Table = Fonte{[Schema=Banco,Item="bi_categorias"]}[Data]
+				    dim_Categorias_Table = Fonte{[Schema=Banco,Item="bi_categorias"]}[Data],
+				    #"Tipo Alterado" = Table.TransformColumnTypes(dim_Categorias_Table,{{"ID_Categoria", type text}, {"Categoria", type text}, {"Ordem", Int64.Type}}),
+				    #"Texto Aparado" = Table.TransformColumns(#"Tipo Alterado",{{"Categoria", each Text.Trim(Text.Clean(_)), type text}}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Texto Aparado", {"ID_Categoria"})
 				in
-				    dim_Categorias_Table
+				    #"Duplicatas Removidas"
 
-	annotation PBI_ResultType = Exception
+	annotation PBI_ResultType = Table
 

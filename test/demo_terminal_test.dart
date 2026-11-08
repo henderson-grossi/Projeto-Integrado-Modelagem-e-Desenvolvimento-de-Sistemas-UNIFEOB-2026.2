@@ -13,6 +13,9 @@ void main() {
       ...Directory('lib/models').listSync().whereType<File>(),
       File('lib/core/moeda.dart'),
       File('lib/services/sacola_base.dart'),
+      File('lib/services/api.dart'),
+      File('lib/services/api_admin.dart'),
+      File('lib/core/privacidade.dart'),
     ];
     for (final f in arquivos) {
       expect(f.readAsStringSync(), isNot(contains('package:flutter')), reason: f.path);
@@ -21,7 +24,7 @@ void main() {
 
   test('demo de terminal: validações barram e o pedido sai certo', () {
     final saida = StringBuffer();
-    runZoned(() => demo.main(['--sem-cor']),
+    runZoned(() => demo.main(['--demo', '--sem-cor']),
         zoneSpecification: ZoneSpecification(print: (_, __, ___, linha) => saida.writeln(linha)));
     final texto = saida.toString();
     expect(texto, isNot(contains('ACEITOU')));

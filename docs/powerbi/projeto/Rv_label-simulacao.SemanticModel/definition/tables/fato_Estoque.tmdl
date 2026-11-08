@@ -3,20 +3,26 @@ table fato_Estoque
 
 	measure 'Valor em Estoque' = CALCULATE(SUM(fato_Estoque[Valor_Estoque_Final]), LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque))))
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: c8e55707-f191-489d-b1f2-7de4255728b7
 
 	measure 'Entradas (un.)' = SUM(fato_Estoque[Entradas])
 		formatString: #,0
+		lineageTag: d84416ad-4dec-40c9-85d0-e293b228c5c6
 
 	measure 'Saídas (un.)' = SUM(fato_Estoque[Saidas])
 		formatString: #,0
+		lineageTag: 46661e0a-7840-4edf-acc3-9f3b4bcf2317
 
 	measure 'SKUs em Atenção' = CALCULATE(COUNTROWS(fato_Estoque), fato_Estoque[Status_Estoque] <> "OK", LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque)))) + 0
 		formatString: 0
+		lineageTag: a937f2db-ea0a-4e72-aada-46733fdb7613
 
 	measure 'Estoque Mínimo' = CALCULATE(SUM(fato_Estoque[Estoque_Minimo]), LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque))))
 		formatString: 0
+		lineageTag: 6ee8c64e-aaac-4716-9ea4-348aeaedcf3a
 
-	measure 'Situação' = VAR e = [Estoque Final] VAR m = [Estoque Mínimo] RETURN IF(ISBLANK(e), BLANK(), IF(e < m, "Abaixo do mínimo", IF(e <= 2 * m, "Atenção", "OK")))
+	measure Situação = VAR e = [Estoque Final] VAR m = [Estoque Mínimo] RETURN IF(ISBLANK(e), BLANK(), IF(e < m, "Abaixo do mínimo", IF(e <= 2 * m, "Atenção", "OK")))
+		lineageTag: bdf07226-0a93-4164-883f-14284a90a514
 
 	measure 'Estoque Final' = CALCULATE(SUM(fato_Estoque[Estoque_Final]), LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque))))
 		formatString: 0
@@ -118,15 +124,25 @@ table fato_Estoque
 
 		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
 
-	column custo
-		dataType: double
+	column Custo_Unitario
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
 		lineageTag: 5ba37d96-5df3-467b-bcbb-d485a98dd8d9
-		summarizeBy: sum
-		sourceColumn: custo
+		summarizeBy: none
+		sourceColumn: Custo_Unitario
 
 		annotation SummarizationSetBy = Automatic
 
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column Cobertura_Meses
+		dataType: double
+		formatString: 0.0
+		lineageTag: cefbc3ba-2122-4991-b61e-831ee4787302
+		summarizeBy: none
+		sourceColumn: Cobertura_Meses
+
+		annotation SummarizationSetBy = Automatic
 
 	partition fato_Estoque = m
 		mode: import
@@ -134,9 +150,15 @@ table fato_Estoque
 				let
 				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
 				    fato_Estoque_Table = Fonte{[Schema=Banco,Item="bi_estoque"]}[Data],
-				    #"Tipo Alterado" = Table.TransformColumnTypes(fato_Estoque_Table,{{"ID_Produto", type text}, {"Data_Mes", type date}, {"Ano_Mes", type text}, {"Estoque_Inicial", Int64.Type}, {"Entradas", Int64.Type}, {"Saidas", Int64.Type}, {"Estoque_Final", Int64.Type}, {"Estoque_Minimo", Int64.Type}, {"Status_Estoque", type text}, {"Valor_Estoque_Final", Currency.Type}})
+				    #"Colunas Renomeadas" = Table.RenameColumns(fato_Estoque_Table,{{"custo", "Custo_Unitario"}}),
+				    #"Tipo Alterado" = Table.TransformColumnTypes(#"Colunas Renomeadas",{{"ID_Produto", type text}, {"Data_Mes", type date}, {"Ano_Mes", type text}, {"Estoque_Inicial", Int64.Type}, {"Entradas", Int64.Type}, {"Saidas", Int64.Type}, {"Estoque_Final", Int64.Type}, {"Estoque_Minimo", Int64.Type}, {"Status_Estoque", type text}, {"Valor_Estoque_Final", Currency.Type}, {"Custo_Unitario", Currency.Type}}),
+				    #"Média de Saídas" = Table.Group(#"Tipo Alterado", {"ID_Produto"}, {{"Media_Saidas_Mes", each List.Average([Saidas]), type number}}),
+				    #"Média Mesclada" = Table.NestedJoin(#"Tipo Alterado", {"ID_Produto"}, #"Média de Saídas", {"ID_Produto"}, "Media", JoinKind.LeftOuter),
+				    #"Média Expandida" = Table.ExpandTableColumn(#"Média Mesclada", "Media", {"Media_Saidas_Mes"}),
+				    #"Cobertura Adicionada" = Table.AddColumn(#"Média Expandida", "Cobertura_Meses", each if [Media_Saidas_Mes] = null or [Media_Saidas_Mes] = 0 then null else Number.Round([Estoque_Final] / [Media_Saidas_Mes], 1), type number),
+				    #"Colunas Auxiliares Removidas" = Table.RemoveColumns(#"Cobertura Adicionada", {"Media_Saidas_Mes"})
 				in
-				    #"Tipo Alterado"
+				    #"Colunas Auxiliares Removidas"
 
 	annotation PBI_NavigationStepName = Navegação
 

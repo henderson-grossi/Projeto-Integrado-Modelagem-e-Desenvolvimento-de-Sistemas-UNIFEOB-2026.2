@@ -3,6 +3,7 @@ table fato_Metas
 
 	measure Meta = SUM(fato_Metas[Meta_Faturamento])
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 897cd231-fb4e-4cef-b840-0462affe72c0
 
 	column ID_Categoria
 		dataType: string
@@ -53,9 +54,10 @@ table fato_Metas
 				let
 				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
 				    fato_Metas_Table = Fonte{[Schema=Banco,Item="bi_metas"]}[Data],
-				    #"Tipo Alterado" = Table.TransformColumnTypes(fato_Metas_Table,{{"ID_Categoria", type text}, {"Data_Mes", type date}, {"Ano_Mes", type text}, {"Meta_Faturamento", Currency.Type}})
+				    #"Tipo Alterado" = Table.TransformColumnTypes(fato_Metas_Table,{{"ID_Categoria", type text}, {"Data_Mes", type date}, {"Ano_Mes", type text}, {"Meta_Faturamento", Currency.Type}}),
+				    #"Metas Vazias Removidas" = Table.SelectRows(#"Tipo Alterado", each [Meta_Faturamento] <> null and [Meta_Faturamento] > 0)
 				in
-				    #"Tipo Alterado"
+				    #"Metas Vazias Removidas"
 
 	annotation PBI_NavigationStepName = Navegação
 

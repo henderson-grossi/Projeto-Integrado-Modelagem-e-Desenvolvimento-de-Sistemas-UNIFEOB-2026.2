@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import 'sacola.dart';
+import 'sacola_base.dart';
 
 /// Cliente HTTP da API (pasta api/), que conversa com o MySQL Rv_Label.
 /// Troque o endereço com: flutter run --dart-define=API_URL=http://10.0.2.2:3000
@@ -19,9 +19,16 @@ class Api {
     return jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
   }
 
+  /// Variações com controle de estoque: `produto_id`, `cor`, `tamanho`, `quantidade`.
+  static Future<List<Map<String, dynamic>>> estoque() async {
+    final r = await http.get(Uri.parse('$baseUrl/estoque')).timeout(_timeout);
+    if (r.statusCode != 200) throw Exception('API respondeu ${r.statusCode}');
+    return (jsonDecode(utf8.decode(r.bodyBytes)) as List).cast<Map<String, dynamic>>();
+  }
+
   /// Grava o pedido e devolve o número. Lança [ApiErro] com a mensagem do servidor.
   static Future<int> enviarPedido(
-    Sacola sacola, {
+    SacolaBase sacola, {
     required String nome,
     required String telefone,
     String? cpf,

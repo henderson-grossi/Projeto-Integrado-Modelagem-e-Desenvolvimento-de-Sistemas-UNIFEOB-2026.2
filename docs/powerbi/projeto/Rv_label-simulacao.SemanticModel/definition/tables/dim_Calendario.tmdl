@@ -2,7 +2,8 @@ table dim_Calendario
 	lineageTag: c3a1bd2b-d72b-460e-b615-a2b6cc9a5e9b
 	dataCategory: Time
 
-	measure 'Período' = LOWER(FORMAT(MIN(dim_Calendario[Data]), "mmm/yyyy") & " a " & FORMAT(MAX(dim_Calendario[Data]), "mmm/yyyy"))
+	measure Período = LOWER(FORMAT(MIN(dim_Calendario[Data]), "mmm/yyyy") & " a " & FORMAT(MAX(dim_Calendario[Data]), "mmm/yyyy"))
+		lineageTag: 7af5c265-8b03-4717-9a85-7d7ad9a249fb
 
 	column Data
 		dataType: dateTime

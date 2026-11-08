@@ -1,11 +1,15 @@
-// Demonstração no terminal: encapsulamento, getters/setters, validações e
-// regras de negócio das classes reais do app, sem abrir a interface Flutter.
+// Terminal da loja: sem opções, abre os menus de administração e de cliente
+// (tool/menus_terminal.dart).
 //
-//   dart run tool/demo_terminal.dart            (com cores)
-//   dart run tool/demo_terminal.dart --sem-cor  (sem cores ANSI)
+// Com --demo, mostra a demonstração de encapsulamento, getters/setters,
+// validações e regras de negócio das classes reais do app:
 //
-// Só importa arquivos em Dart puro (lib/models, lib/core/moeda.dart e
-// lib/services/sacola_base.dart); por isso roda com o `dart`, sem Flutter.
+//   dart run tool/demo_terminal.dart                   (menus)
+//   dart run tool/demo_terminal.dart --demo            (demonstração, com cores)
+//   dart run tool/demo_terminal.dart --demo --sem-cor  (sem cores ANSI)
+//
+// Só importa arquivos em Dart puro (lib/models, lib/core e lib/services sem
+// Flutter); por isso roda com o `dart`, sem Flutter.
 
 // A demo existe para escrever no console.
 // ignore_for_file: avoid_print
@@ -15,6 +19,8 @@ import 'dart:io';
 import 'package:rvlabel_app/core/moeda.dart';
 import 'package:rvlabel_app/models/models.dart';
 import 'package:rvlabel_app/services/sacola_base.dart';
+
+import 'menus_terminal.dart';
 
 var _comCor = false;
 var _passo = 0;
@@ -48,7 +54,9 @@ void _tenta(String descricao, void Function() acao) {
   }
 }
 
-void main(List<String> args) {
+Future<void> main(List<String> args) async {
+  if (!args.contains('--demo')) return MenusTerminal().rodar();
+
   // cmd e PowerShell do Windows 10+ entendem cores ANSI; NO_COLOR ou --sem-cor desligam.
   _comCor = stdout.hasTerminal &&
       stdout.supportsAnsiEscapes &&

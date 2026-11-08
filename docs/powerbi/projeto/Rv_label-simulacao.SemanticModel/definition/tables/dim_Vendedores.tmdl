@@ -41,14 +41,28 @@ table dim_Vendedores
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	column Tempo_de_Casa_Anos
+		dataType: int64
+		formatString: 0
+		lineageTag: 85c3f69f-66d6-439a-95c5-4df4e160e3ec
+		summarizeBy: none
+		sourceColumn: Tempo_de_Casa_Anos
+
+		annotation SummarizationSetBy = Automatic
+
 	partition dim_Vendedores = m
 		mode: import
 		source =
 				let
 				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
-				    dim_Vendedores_Table = Fonte{[Schema=Banco,Item="bi_vendedores"]}[Data]
+				    dim_Vendedores_Table = Fonte{[Schema=Banco,Item="bi_vendedores"]}[Data],
+				    #"Tipo Alterado" = Table.TransformColumnTypes(dim_Vendedores_Table,{{"ID_Vendedor", type text}, {"Nome", type text}, {"Cargo", type text}, {"Data_Admissao", type date}}),
+				    #"Texto Aparado" = Table.TransformColumns(#"Tipo Alterado",{{"Nome", each Text.Trim(Text.Clean(_)), type text}, {"Cargo", each Text.Proper(Text.Trim(Text.Clean(_))), type text}}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Texto Aparado", {"ID_Vendedor"}),
+				    #"Tempo de Casa Adicionado" = Table.AddColumn(#"Duplicatas Removidas", "Tempo_de_Casa_Anos", each if [Data_Admissao] = null then null else Number.RoundDown(Duration.Days(Date.From(DateTime.LocalNow()) - [Data_Admissao]) / 365.25), Int64.Type),
+				    #"Nomes Formatados" = Table.TransformColumns(#"Tempo de Casa Adicionado", {{"Nome", fxNomeProprio, type text}, {"Cargo", fxNomeProprio, type text}})
 				in
-				    dim_Vendedores_Table
+				    #"Nomes Formatados"
 
-	annotation PBI_ResultType = Exception
+	annotation PBI_ResultType = Table
 

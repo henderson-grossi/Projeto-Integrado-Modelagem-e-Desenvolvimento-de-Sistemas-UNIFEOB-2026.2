@@ -9,7 +9,7 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 1
 
-annotation PBI_QueryOrder = ["dim_Calendario","dim_Categorias","dim_Clientes","dim_Produtos","dim_Vendedores","fato_Estoque","fato_Metas","fato_Vendas","Servidor","Banco"]
+annotation PBI_QueryOrder = ["dim_Calendario","dim_Categorias","dim_Clientes","dim_Produtos","dim_Vendedores","fato_Estoque","fato_Metas","fato_Vendas","Servidor","Banco","fxNomeProprio"]
 
 annotation PBI_ProTooling = ["TMDLView_Desktop","DaxQueryView_Desktop","DevMode"]
 

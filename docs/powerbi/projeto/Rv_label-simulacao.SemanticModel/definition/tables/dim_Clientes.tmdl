@@ -57,15 +57,71 @@ table dim_Clientes
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	column Regiao
+		dataType: string
+		lineageTag: 9985e5a3-95a2-4277-9921-74ff61a9d99b
+		summarizeBy: none
+		sourceColumn: Regiao
+
+		annotation SummarizationSetBy = Automatic
+
+	column Primeiro_Nome
+		dataType: string
+		lineageTag: a1cfd4e5-7675-42c4-8946-605cb2893cac
+		summarizeBy: none
+		sourceColumn: Primeiro_Nome
+
+		annotation SummarizationSetBy = Automatic
+
+	column Qtd_Pedidos
+		dataType: int64
+		formatString: 0
+		lineageTag: face11fd-4b8c-4bd4-be2d-5a2d40d70746
+		summarizeBy: sum
+		sourceColumn: Qtd_Pedidos
+
+		annotation SummarizationSetBy = Automatic
+
+	column Total_Gasto
+		dataType: decimal
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: c54c3ddd-d93f-4cf2-a412-7a9ad2e167cf
+		summarizeBy: sum
+		sourceColumn: Total_Gasto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segmento
+		dataType: string
+		lineageTag: ba6ca16b-4a90-47ec-a743-ab0f976e0148
+		summarizeBy: none
+		sourceColumn: Segmento
+
+		annotation SummarizationSetBy = Automatic
+
 	partition dim_Clientes = m
 		mode: import
 		source =
 				let
 				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
 				    dim_Clientes_Table = Fonte{[Schema=Banco,Item="bi_clientes"]}[Data],
-				    #"Tipo Alterado" = Table.TransformColumnTypes(dim_Clientes_Table,{{"ID_Cliente", type text}, {"Nome", type text}, {"Cidade", type text}, {"UF", type text}, {"Faixa_Etaria", type text}, {"Data_Cadastro", type date}})
+				    #"Tipo Alterado" = Table.TransformColumnTypes(dim_Clientes_Table,{{"ID_Cliente", type text}, {"Nome", type text}, {"Cidade", type text}, {"UF", type text}, {"Faixa_Etaria", type text}, {"Data_Cadastro", type date}}),
+				    #"Texto Aparado" = Table.TransformColumns(#"Tipo Alterado",{{"Nome", each Text.Trim(Text.Clean(_)), type text}, {"Cidade", each Text.Trim(Text.Clean(_)), type text}, {"UF", each Text.Upper(Text.Trim(_)), type text}}),
+				    #"UF Vazia Substituída" = Table.ReplaceValue(#"Texto Aparado", "", "NI", Replacer.ReplaceValue, {"UF"}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"UF Vazia Substituída", {"ID_Cliente"}),
+				    #"Região Adicionada" = Table.AddColumn(#"Duplicatas Removidas", "Regiao", each if List.Contains({"SP","RJ","MG","ES"}, [UF]) then "Sudeste" else if List.Contains({"PR","SC","RS"}, [UF]) then "Sul" else if List.Contains({"DF","GO","MT","MS"}, [UF]) then "Centro-Oeste" else if List.Contains({"AC","AP","AM","PA","RO","RR","TO"}, [UF]) then "Norte" else if List.Contains({"AL","BA","CE","MA","PB","PE","PI","RN","SE"}, [UF]) then "Nordeste" else "Não informada", type text),
+				    #"Nome Formatado" = Table.TransformColumns(#"Região Adicionada", {{"Nome", fxNomeProprio, type text}}),
+				    #"Primeiro Nome Extraído" = Table.AddColumn(#"Nome Formatado", "Primeiro_Nome", each if [Nome] = null then null else if Text.Contains([Nome], " ") then Text.BeforeDelimiter([Nome], " ") else [Nome], type text),
+				    #"Vendas Entregues" = Table.SelectRows(fato_Vendas, each [Status_Pedido] = "Entregue"),
+				    #"Vendas por Cliente" = Table.Group(#"Vendas Entregues", {"ID_Cliente"}, {{"Qtd_Pedidos", each List.Count(List.Distinct([ID_Pedido])), Int64.Type}, {"Total_Gasto", each List.Sum([Valor_Liquido]), Currency.Type}}),
+				    #"Consultas Mescladas" = Table.NestedJoin(#"Primeiro Nome Extraído", {"ID_Cliente"}, #"Vendas por Cliente", {"ID_Cliente"}, "Vendas", JoinKind.LeftOuter),
+				    #"Vendas Expandidas" = Table.ExpandTableColumn(#"Consultas Mescladas", "Vendas", {"Qtd_Pedidos", "Total_Gasto"}),
+				    #"Sem Compra Substituído" = Table.ReplaceValue(#"Vendas Expandidas", null, 0, Replacer.ReplaceValue, {"Qtd_Pedidos", "Total_Gasto"}),
+				    #"Tipo das Vendas Alterado" = Table.TransformColumnTypes(#"Sem Compra Substituído", {{"Qtd_Pedidos", Int64.Type}, {"Total_Gasto", Currency.Type}}),
+				    #"Média de Gasto" = List.Average(List.Select(#"Tipo das Vendas Alterado"[Total_Gasto], each _ > 0)),
+				    #"Segmento Adicionado" = Table.AddColumn(#"Tipo das Vendas Alterado", "Segmento", each if [Qtd_Pedidos] = 0 then "Sem compra" else if [Qtd_Pedidos] = 1 then "Compra única" else if [Total_Gasto] >= 2 * #"Média de Gasto" then "VIP" else "Recorrente", type text)
 				in
-				    #"Tipo Alterado"
+				    #"Segmento Adicionado"
 
 	annotation PBI_ResultType = Table
 

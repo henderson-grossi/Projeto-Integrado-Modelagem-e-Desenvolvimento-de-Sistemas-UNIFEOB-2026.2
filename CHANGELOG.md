@@ -5,6 +5,10 @@ Segue o formato do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## Não lançado
 
+### Terminal (`tool/`)
+- `dart run tool/demo_terminal.dart` agora abre dois menus, Administração e Cliente, com as funções do app e a mesma API.
+  A demonstração de orientação a objetos continua em `--demo`.
+
 ### Site (`site/`)
 - Versão para site da loja, em React: vitrine, página de cada peça, sacola, "Meus pedidos", Sobre, Contato e Privacidade.
 - Rolagem suave do mouse, transição de foto entre a vitrine e a peça, e "linha de tinta" animada nas opções do cabeçalho.

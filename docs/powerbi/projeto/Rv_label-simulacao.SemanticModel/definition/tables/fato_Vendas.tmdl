@@ -3,59 +3,78 @@ table fato_Vendas
 
 	measure 'Pedidos Entregues' = CALCULATE([Pedidos], fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: 0
+		lineageTag: 2efbaa60-e846-4445-b113-93aa32c11eb5
 
 	measure 'Itens Vendidos' = CALCULATE(SUM(fato_Vendas[Quantidade]), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: #,0
+		lineageTag: 279e82c0-1099-4878-9c59-87f234d5d185
 
 	measure 'Clientes Ativos' = CALCULATE(DISTINCTCOUNT(fato_Vendas[ID_Cliente]), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: 0
+		lineageTag: 1278ca0e-2cdc-440c-9367-8814f7b214d5
 
 	measure 'Pedidos por Cliente' = DIVIDE([Pedidos Entregues], [Clientes Ativos])
 		formatString: 0.0
+		lineageTag: 0d492db4-8d4b-4576-9f98-e50bd5979a62
 
 	measure 'Desconto Concedido' = CALCULATE(SUM(fato_Vendas[Valor_Desconto]), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: e8a2fb64-54eb-42f0-a024-28e5e4d4ba1b
 
 	measure 'Taxa de Cancelamento' = DIVIDE(CALCULATE(COUNTROWS(fato_Vendas), fato_Vendas[Status_Pedido] = "Cancelado"), COUNTROWS(fato_Vendas))
 		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: e35b81fd-38b5-41dc-984b-239d7b7a90c3
 
 	measure '% Acumulado' = VAR f = [Faturamento] VAR tot = CALCULATE([Faturamento], ALLSELECTED(dim_Produtos)) RETURN IF(NOT ISBLANK(f), DIVIDE(SUMX(FILTER(ALLSELECTED(dim_Produtos), [Faturamento] >= f), [Faturamento]), tot))
 		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: bd8287f7-f4df-43a9-b35c-12044f20fcdd
 
 	measure 'Classe ABC' = VAR p = [% Acumulado] RETURN IF(ISBLANK(p), BLANK(), IF(p <= 0.8, "A", IF(p <= 0.95, "B", "C")))
+		lineageTag: cd6aead9-a890-4206-84fc-bcafe4991186
 
 	measure 'Peças Classe A' = COUNTROWS(FILTER(ALLSELECTED(dim_Produtos), [Classe ABC] = "A")) + 0
 		formatString: 0
+		lineageTag: a5ef5ffc-d5fb-4ac2-9a1b-2b8afa4e9269
 
 	measure 'Clientes Novos' = VAR ini = MIN(dim_Calendario[Data]) RETURN COUNTROWS(FILTER(CALCULATETABLE(VALUES(fato_Vendas[ID_Cliente]), fato_Vendas[Status_Pedido] = "Entregue"), CALCULATE(MIN(fato_Vendas[Data]), ALL(dim_Calendario), fato_Vendas[Status_Pedido] = "Entregue") >= ini)) + 0
 		formatString: 0
+		lineageTag: cda6a63e-6846-4825-ad0b-18b11d3ac573
 
 	measure 'Clientes Recorrentes' = [Clientes Ativos] - [Clientes Novos]
 		formatString: 0
+		lineageTag: edd2ed8f-6ac9-484f-8be7-3a96cd83f174
 
 	measure '% Recorrentes' = DIVIDE([Clientes Recorrentes], [Clientes Ativos])
 		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 8c0a234d-9d4d-4d00-a8a9-aca96498e323
 
 	measure '% Recompra' = DIVIDE(COUNTROWS(FILTER(CALCULATETABLE(VALUES(fato_Vendas[ID_Cliente]), fato_Vendas[Status_Pedido] = "Entregue"), CALCULATE([Pedidos Entregues]) >= 2)), [Clientes Ativos])
 		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 595a9ece-e0a6-4fe6-a147-2654a53ec03b
 
 	measure 'Última Compra' = CALCULATE(MAX(fato_Vendas[Data]), ALL(dim_Calendario), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: dd/mm/yyyy
+		lineageTag: d2e886af-63de-4c4f-8a85-6874a2ee1636
 
 	measure 'Dias sem Comprar' = VAR u = [Última Compra] RETURN IF(NOT ISBLANK(u), DATEDIFF(u, CALCULATE(MAX(fato_Vendas[Data]), ALL(fato_Vendas)), DAY))
 		formatString: 0
+		lineageTag: 275b7554-a5ff-4958-9082-0380de6484ad
 
 	measure 'Clientes a Reativar' = COUNTROWS(FILTER(VALUES(dim_Clientes[ID_Cliente]), [Dias sem Comprar] >= 90)) + 0
 		formatString: 0
+		lineageTag: 156f53bd-9944-49f7-942b-8cec733e94ba
 
 	measure 'Última Compra (reativar)' = IF([Dias sem Comprar] >= 90, [Última Compra])
 		formatString: dd/mm/yyyy
+		lineageTag: 617350e7-205e-4bec-bda7-7ee8ef412b21
 
 	measure 'Dias sem Comprar (reativar)' = IF([Dias sem Comprar] >= 90, [Dias sem Comprar])
 		formatString: 0
+		lineageTag: 150218be-b9c0-4108-98d6-c54967d7e337
 
 	measure 'Gasto Total (reativar)' = IF([Dias sem Comprar] >= 90, CALCULATE([Faturamento], ALL(dim_Calendario)))
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 9b7393e4-a84c-4819-b777-d5a104976f16
 
 	measure Faturamento = CALCULATE(SUM(fato_Vendas[Valor_Liquido]), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
@@ -243,7 +262,7 @@ table fato_Vendas
 		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
 
 	column Valor_Desconto
-		dataType: decimal
+		dataType: double
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
 		lineageTag: 7035ff82-8205-49c7-a2df-8beb32a1d6b4
 		summarizeBy: sum
@@ -286,15 +305,46 @@ table fato_Vendas
 
 		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
 
+	column Tipo_Pagamento
+		dataType: string
+		lineageTag: 414feadf-9a68-47df-965b-e82cefb177d5
+		summarizeBy: none
+		sourceColumn: Tipo_Pagamento
+
+		annotation SummarizationSetBy = Automatic
+
+	column Faixa_Desconto
+		dataType: string
+		lineageTag: 37f4e962-868f-4173-bff5-9a6a7c96b903
+		summarizeBy: none
+		sourceColumn: Faixa_Desconto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Margem_Item_Perc
+		dataType: double
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: b35ea52f-1f3d-4777-b477-e5c1980a2833
+		summarizeBy: none
+		sourceColumn: Margem_Item_Perc
+
+		annotation SummarizationSetBy = Automatic
+
 	partition fato_Vendas = m
 		mode: import
 		source =
 				let
 				    Fonte = MySQL.Database(Servidor, Banco, [ReturnSingleDatabase=true]),
 				    fato_Vendas_Table = Fonte{[Schema=Banco,Item="bi_vendas"]}[Data],
-				    #"Tipo Alterado" = Table.TransformColumnTypes(fato_Vendas_Table,{{"ID_Venda", type text}, {"ID_Pedido", type text}, {"Data", type date}, {"ID_Cliente", type text}, {"ID_Produto", type text}, {"ID_Vendedor", type text}, {"Canal_Venda", type text}, {"Forma_Pagamento", type text}, {"Parcelas", Int64.Type}, {"Status_Pedido", type text}, {"Quantidade", Int64.Type}, {"Preco_Unitario", Currency.Type}, {"Desconto_Perc", Percentage.Type}, {"Custo_Unitario", Currency.Type}, {"Valor_Bruto", Currency.Type}, {"Valor_Desconto", Currency.Type}, {"Valor_Liquido", Currency.Type}, {"Custo_Total", Currency.Type}, {"Lucro", Currency.Type}})
+				    #"Tipo Alterado" = Table.TransformColumnTypes(fato_Vendas_Table,{{"ID_Venda", type text}, {"ID_Pedido", type text}, {"Data", type date}, {"ID_Cliente", type text}, {"ID_Produto", type text}, {"ID_Vendedor", type text}, {"Canal_Venda", type text}, {"Forma_Pagamento", type text}, {"Parcelas", Int64.Type}, {"Status_Pedido", type text}, {"Quantidade", Int64.Type}, {"Preco_Unitario", Currency.Type}, {"Desconto_Perc", Percentage.Type}, {"Custo_Unitario", Currency.Type}, {"Valor_Bruto", Currency.Type}, {"Valor_Desconto", Currency.Type}, {"Valor_Liquido", Currency.Type}, {"Custo_Total", Currency.Type}, {"Lucro", Currency.Type}}),
+				    #"Desconto Nulo Substituído" = Table.ReplaceValue(#"Tipo Alterado", null, 0, Replacer.ReplaceValue, {"Desconto_Perc", "Valor_Desconto"}),
+				    #"Texto Aparado" = Table.TransformColumns(#"Desconto Nulo Substituído",{{"Canal_Venda", each Text.Trim(_), type text}, {"Forma_Pagamento", each Text.Trim(_), type text}, {"Status_Pedido", each Text.Trim(_), type text}}),
+				    #"Linhas Inválidas Removidas" = Table.SelectRows(#"Texto Aparado", each [Data] <> null and [ID_Produto] <> null and [Quantidade] <> null and [Quantidade] > 0),
+				    #"Tipo de Pagamento Adicionado" = Table.AddColumn(#"Linhas Inválidas Removidas", "Tipo_Pagamento", each if [Parcelas] <> null and [Parcelas] > 1 then "Parcelado" else "À vista", type text),
+				    #"Faixa de Desconto Adicionada" = Table.AddColumn(#"Tipo de Pagamento Adicionado", "Faixa_Desconto", each if [Desconto_Perc] = 0 then "Sem desconto" else if [Desconto_Perc] <= 0.1 then "Até 10%" else "Acima de 10%", type text),
+				    #"Margem do Item Adicionada" = Table.AddColumn(#"Faixa de Desconto Adicionada", "Margem_Item_Perc", each try (if [Valor_Liquido] = null or [Valor_Liquido] = 0 then null else Number.Round([Lucro] / [Valor_Liquido], 4)) otherwise null, Percentage.Type)
 				in
-				    #"Tipo Alterado"
+				    #"Margem do Item Adicionada"
 
 	annotation PBI_NavigationStepName = Navegação
 

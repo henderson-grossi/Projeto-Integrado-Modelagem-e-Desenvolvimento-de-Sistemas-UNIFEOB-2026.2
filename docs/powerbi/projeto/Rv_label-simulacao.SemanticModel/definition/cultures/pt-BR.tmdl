@@ -911,19 +911,7 @@ cultureInfo pt-BR
 			          "ConceptualProperty": "% Recorrentes"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "Clientes recorrentes": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "fato_vendas.clientes_a_reativar": {
 			      "Definition": {
@@ -936,6 +924,27 @@ cultureInfo pt-BR
 			      "Terms": [
 			        {
 			          "Clientes a reativar": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fato_vendas.recompra": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fato_Vendas",
+			          "ConceptualProperty": "% Recompra"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Compraram 2+ vezes": {
 			            "State": "Suggested",
 			            "Source": {
 			              "Type": "External",

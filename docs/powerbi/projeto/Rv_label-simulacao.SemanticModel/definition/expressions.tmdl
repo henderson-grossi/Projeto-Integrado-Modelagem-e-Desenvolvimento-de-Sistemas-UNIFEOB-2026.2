@@ -8,3 +8,15 @@ expression Banco = "rv_label" meta [IsParameterQuery=true, Type="Text", IsParame
 
 	annotation PBI_ResultType = Text
 
+expression fxNomeProprio =
+		(texto as nullable text) as nullable text =>
+		let
+		    Palavras = if texto = null then {} else Text.Split(Text.Proper(Text.Trim(texto)), " "),
+		    Minusculas = {"Da", "De", "Do", "Das", "Dos", "E"},
+		    Ajustadas = List.Transform(List.Positions(Palavras), each if _ > 0 and List.Contains(Minusculas, Palavras{_}) then Text.Lower(Palavras{_}) else Palavras{_})
+		in
+		    if texto = null then null else Text.Combine(List.Select(Ajustadas, each _ <> ""), " ")
+	lineageTag: a2514272-e027-45d1-8a49-d36ddedbfd82
+
+	annotation PBI_ResultType = Function
+

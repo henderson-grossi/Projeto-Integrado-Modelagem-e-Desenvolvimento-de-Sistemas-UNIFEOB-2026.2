@@ -3,7 +3,7 @@ table fato_Metas
 
 	measure Meta = SUM(fato_Metas[Meta_Faturamento])
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
-		lineageTag: 897cd231-fb4e-4cef-b840-0462affe72c0
+		lineageTag: ece004af-b476-4d63-8a0a-eb2917033b86
 
 	column ID_Categoria
 		dataType: string

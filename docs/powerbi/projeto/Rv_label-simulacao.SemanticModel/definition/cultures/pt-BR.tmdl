@@ -954,6 +954,27 @@ cultureInfo pt-BR
 			          }
 			        }
 			      ]
+			    },
+			    "dim_clientes.local": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Clientes",
+			          "ConceptualProperty": "Local"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Cidade": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
 			    }
 			  }
 			}

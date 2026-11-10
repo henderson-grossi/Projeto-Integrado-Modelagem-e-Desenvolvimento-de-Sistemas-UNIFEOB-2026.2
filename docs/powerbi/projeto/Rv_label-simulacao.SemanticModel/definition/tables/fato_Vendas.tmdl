@@ -3,78 +3,78 @@ table fato_Vendas
 
 	measure 'Pedidos Entregues' = CALCULATE([Pedidos], fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: 0
-		lineageTag: 2efbaa60-e846-4445-b113-93aa32c11eb5
+		lineageTag: 6aa3cd58-002e-48e1-813d-7a3e6362bc73
 
 	measure 'Itens Vendidos' = CALCULATE(SUM(fato_Vendas[Quantidade]), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: #,0
-		lineageTag: 279e82c0-1099-4878-9c59-87f234d5d185
+		lineageTag: faf48909-4ef2-4482-9379-cc94878bbc72
 
 	measure 'Clientes Ativos' = CALCULATE(DISTINCTCOUNT(fato_Vendas[ID_Cliente]), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: 0
-		lineageTag: 1278ca0e-2cdc-440c-9367-8814f7b214d5
+		lineageTag: 62e9d4fb-70ec-4ea0-8f3c-eae7c6353dbe
 
 	measure 'Pedidos por Cliente' = DIVIDE([Pedidos Entregues], [Clientes Ativos])
 		formatString: 0.0
-		lineageTag: 0d492db4-8d4b-4576-9f98-e50bd5979a62
+		lineageTag: 3308080b-d784-4dc0-beef-2f4e8309dd67
 
 	measure 'Desconto Concedido' = CALCULATE(SUM(fato_Vendas[Valor_Desconto]), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
-		lineageTag: e8a2fb64-54eb-42f0-a024-28e5e4d4ba1b
+		lineageTag: 01adcd3a-d2d5-4be2-9a4f-5da4f9042534
 
 	measure 'Taxa de Cancelamento' = DIVIDE(CALCULATE(COUNTROWS(fato_Vendas), fato_Vendas[Status_Pedido] = "Cancelado"), COUNTROWS(fato_Vendas))
 		formatString: 0.0%;-0.0%;0.0%
-		lineageTag: e35b81fd-38b5-41dc-984b-239d7b7a90c3
+		lineageTag: 5c33be57-5372-4426-9466-d528427aeaea
 
 	measure '% Acumulado' = VAR f = [Faturamento] VAR tot = CALCULATE([Faturamento], ALLSELECTED(dim_Produtos)) RETURN IF(NOT ISBLANK(f), DIVIDE(SUMX(FILTER(ALLSELECTED(dim_Produtos), [Faturamento] >= f), [Faturamento]), tot))
 		formatString: 0.0%;-0.0%;0.0%
-		lineageTag: bd8287f7-f4df-43a9-b35c-12044f20fcdd
+		lineageTag: 9c7fc3da-9c04-485c-8ab8-8ed61e799793
 
 	measure 'Classe ABC' = VAR p = [% Acumulado] RETURN IF(ISBLANK(p), BLANK(), IF(p <= 0.8, "A", IF(p <= 0.95, "B", "C")))
-		lineageTag: cd6aead9-a890-4206-84fc-bcafe4991186
+		lineageTag: 1c3e30b3-a2d5-493d-9a75-9855024cbd57
 
 	measure 'Peças Classe A' = COUNTROWS(FILTER(ALLSELECTED(dim_Produtos), [Classe ABC] = "A")) + 0
 		formatString: 0
-		lineageTag: a5ef5ffc-d5fb-4ac2-9a1b-2b8afa4e9269
+		lineageTag: a750ce23-9cd5-4917-b583-b52b842b5ee6
 
 	measure 'Clientes Novos' = VAR ini = MIN(dim_Calendario[Data]) RETURN COUNTROWS(FILTER(CALCULATETABLE(VALUES(fato_Vendas[ID_Cliente]), fato_Vendas[Status_Pedido] = "Entregue"), CALCULATE(MIN(fato_Vendas[Data]), ALL(dim_Calendario), fato_Vendas[Status_Pedido] = "Entregue") >= ini)) + 0
 		formatString: 0
-		lineageTag: cda6a63e-6846-4825-ad0b-18b11d3ac573
+		lineageTag: f42dbad9-13ab-4e57-afbf-5414618e01e7
 
 	measure 'Clientes Recorrentes' = [Clientes Ativos] - [Clientes Novos]
 		formatString: 0
-		lineageTag: edd2ed8f-6ac9-484f-8be7-3a96cd83f174
+		lineageTag: 1806d117-ef06-46e8-a00e-2286357aa668
 
 	measure '% Recorrentes' = DIVIDE([Clientes Recorrentes], [Clientes Ativos])
 		formatString: 0.0%;-0.0%;0.0%
-		lineageTag: 8c0a234d-9d4d-4d00-a8a9-aca96498e323
+		lineageTag: dc62680a-147f-49f6-adbb-b280bfde2d17
 
 	measure '% Recompra' = DIVIDE(COUNTROWS(FILTER(CALCULATETABLE(VALUES(fato_Vendas[ID_Cliente]), fato_Vendas[Status_Pedido] = "Entregue"), CALCULATE([Pedidos Entregues]) >= 2)), [Clientes Ativos])
 		formatString: 0.0%;-0.0%;0.0%
-		lineageTag: 595a9ece-e0a6-4fe6-a147-2654a53ec03b
+		lineageTag: bba0736e-deb5-41c9-b2b1-123bcbce8188
 
 	measure 'Última Compra' = CALCULATE(MAX(fato_Vendas[Data]), ALL(dim_Calendario), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: dd/mm/yyyy
-		lineageTag: d2e886af-63de-4c4f-8a85-6874a2ee1636
+		lineageTag: 80a6428f-b0b4-4698-b83d-fb35fd16075d
 
 	measure 'Dias sem Comprar' = VAR u = [Última Compra] RETURN IF(NOT ISBLANK(u), DATEDIFF(u, CALCULATE(MAX(fato_Vendas[Data]), ALL(fato_Vendas)), DAY))
 		formatString: 0
-		lineageTag: 275b7554-a5ff-4958-9082-0380de6484ad
+		lineageTag: d1d97590-3e11-4045-8193-56027a2f493a
 
 	measure 'Clientes a Reativar' = COUNTROWS(FILTER(VALUES(dim_Clientes[ID_Cliente]), [Dias sem Comprar] >= 90)) + 0
 		formatString: 0
-		lineageTag: 156f53bd-9944-49f7-942b-8cec733e94ba
+		lineageTag: 399878a9-67cd-4afe-85fb-8258b3849528
 
 	measure 'Última Compra (reativar)' = IF([Dias sem Comprar] >= 90, [Última Compra])
 		formatString: dd/mm/yyyy
-		lineageTag: 617350e7-205e-4bec-bda7-7ee8ef412b21
+		lineageTag: d0da194e-ccac-4285-b807-4c7fb751adfb
 
 	measure 'Dias sem Comprar (reativar)' = IF([Dias sem Comprar] >= 90, [Dias sem Comprar])
 		formatString: 0
-		lineageTag: 150218be-b9c0-4108-98d6-c54967d7e337
+		lineageTag: bed82723-3a0d-41e9-a484-47d385e09d14
 
 	measure 'Gasto Total (reativar)' = IF([Dias sem Comprar] >= 90, CALCULATE([Faturamento], ALL(dim_Calendario)))
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
-		lineageTag: 9b7393e4-a84c-4819-b777-d5a104976f16
+		lineageTag: c6c641b5-ad9b-4163-b7d6-7e1e325b9f3b
 
 	measure Faturamento = CALCULATE(SUM(fato_Vendas[Valor_Liquido]), fato_Vendas[Status_Pedido] = "Entregue")
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
@@ -323,7 +323,7 @@ table fato_Vendas
 
 	column Margem_Item_Perc
 		dataType: double
-		formatString: 0.00%;-0.00%;0.00%
+		formatString: 0.0%;-0.0%;0.0%
 		lineageTag: b35ea52f-1f3d-4777-b477-e5c1980a2833
 		summarizeBy: none
 		sourceColumn: Margem_Item_Perc

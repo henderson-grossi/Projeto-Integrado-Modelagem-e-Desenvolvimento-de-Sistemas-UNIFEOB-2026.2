@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
   "name": "p2_mensal",
   "position": {
     "x": 20,
@@ -17,19 +17,63 @@
           "projections": [
             {
               "field": {
-                "Column": {
+                "HierarchyLevel": {
                   "Expression": {
-                    "SourceRef": {
-                      "Entity": "dim_Calendario"
+                    "Hierarchy": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "dim_Calendario"
+                        }
+                      },
+                      "Hierarchy": "Calendário"
                     }
                   },
-                  "Property": "Mes_Ano"
+                  "Level": "Ano"
                 }
               },
-              "queryRef": "dim_Calendario.Mes_Ano",
-              "nativeQueryRef": "Mes_Ano",
-              "displayName": "Mês",
+              "queryRef": "dim_Calendario.Calendário.Ano",
+              "nativeQueryRef": "Calendário Ano",
               "active": true
+            },
+            {
+              "field": {
+                "HierarchyLevel": {
+                  "Expression": {
+                    "Hierarchy": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "dim_Calendario"
+                        }
+                      },
+                      "Hierarchy": "Calendário"
+                    }
+                  },
+                  "Level": "Trimestre"
+                }
+              },
+              "queryRef": "dim_Calendario.Calendário.Trimestre",
+              "nativeQueryRef": "Calendário Trimestre",
+              "active": false
+            },
+            {
+              "field": {
+                "HierarchyLevel": {
+                  "Expression": {
+                    "Hierarchy": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "dim_Calendario"
+                        }
+                      },
+                      "Hierarchy": "Calendário"
+                    }
+                  },
+                  "Level": "Mês"
+                }
+              },
+              "queryRef": "dim_Calendario.Calendário.Mês",
+              "nativeQueryRef": "Calendário Mês",
+              "active": false
             }
           ]
         },
@@ -56,13 +100,18 @@
         "sort": [
           {
             "field": {
-              "Column": {
+              "HierarchyLevel": {
                 "Expression": {
-                  "SourceRef": {
-                    "Entity": "dim_Calendario"
+                  "Hierarchy": {
+                    "Expression": {
+                      "SourceRef": {
+                        "Entity": "dim_Calendario"
+                      }
+                    },
+                    "Hierarchy": "Calendário"
                   }
                 },
-                "Property": "Mes_Ano"
+                "Level": "Ano"
               }
             },
             "direction": "Ascending"
@@ -70,6 +119,41 @@
         ],
         "isDefaultSort": true
       }
+    },
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "valueAxis": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "visualContainerObjects": {
       "title": [
@@ -85,7 +169,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Faturamento mensal'"
+                  "Value": "'Faturamento por ano, trimestre e mês (drill-down)'"
                 }
               }
             }
@@ -93,28 +177,6 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true,
-    "objects": {
-      "labels": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
-            "labelDisplayUnits": {
-              "expr": {
-                "Literal": {
-                  "Value": "1D"
-                }
-              }
-            }
-          }
-        }
-      ]
-    }
+    "drillFilterOtherVisuals": true
   }
 }

@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "p4_faixa",
   "position": {
-    "x": 636,
+    "x": 956,
     "y": 150,
-    "z": 7000,
+    "z": 8000,
     "height": 230,
-    "width": 624,
-    "tabOrder": 7000
+    "width": 304,
+    "tabOrder": 8000
   },
   "visual": {
     "visualType": "clusteredColumnChart",
@@ -85,7 +85,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Faturamento por faixa etária'"
+                  "Value": "'Por faixa etária'"
                 }
               }
             }

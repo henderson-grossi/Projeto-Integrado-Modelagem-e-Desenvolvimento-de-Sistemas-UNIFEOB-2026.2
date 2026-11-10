@@ -99,6 +99,30 @@ table dim_Clientes
 
 		annotation SummarizationSetBy = Automatic
 
+	column Local
+		dataType: string
+		lineageTag: 5d0c8e2a-7f41-4b8e-9c3d-2a6b1e4f7a90
+		dataCategory: Place
+		summarizeBy: none
+		sourceColumn: Local
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy Geografia
+		lineageTag: 8b3f2d1c-4e5a-4f6b-8c7d-9e0f1a2b3c4d
+
+		level Região
+			lineageTag: 1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f
+			column: Regiao
+
+		level UF
+			lineageTag: 2d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f6a
+			column: UF
+
+		level Cidade
+			lineageTag: 3e4f5a6b-7c8d-4e9f-8a1b-2c3d4e5f6a7b
+			column: Cidade
+
 	partition dim_Clientes = m
 		mode: import
 		source =
@@ -119,9 +143,10 @@ table dim_Clientes
 				    #"Sem Compra Substituído" = Table.ReplaceValue(#"Vendas Expandidas", null, 0, Replacer.ReplaceValue, {"Qtd_Pedidos", "Total_Gasto"}),
 				    #"Tipo das Vendas Alterado" = Table.TransformColumnTypes(#"Sem Compra Substituído", {{"Qtd_Pedidos", Int64.Type}, {"Total_Gasto", Currency.Type}}),
 				    #"Média de Gasto" = List.Average(List.Select(#"Tipo das Vendas Alterado"[Total_Gasto], each _ > 0)),
-				    #"Segmento Adicionado" = Table.AddColumn(#"Tipo das Vendas Alterado", "Segmento", each if [Qtd_Pedidos] = 0 then "Sem compra" else if [Qtd_Pedidos] = 1 then "Compra única" else if [Total_Gasto] >= 2 * #"Média de Gasto" then "VIP" else "Recorrente", type text)
+				    #"Segmento Adicionado" = Table.AddColumn(#"Tipo das Vendas Alterado", "Segmento", each if [Qtd_Pedidos] = 0 then "Sem compra" else if [Qtd_Pedidos] = 1 then "Compra única" else if [Total_Gasto] >= 2 * #"Média de Gasto" then "VIP" else "Recorrente", type text),
+				    #"Local Adicionado" = Table.AddColumn(#"Segmento Adicionado", "Local", each if [Cidade] = null or [Cidade] = "" or [Cidade] = "Não informada" or [UF] = "NI" then null else [Cidade] & ", " & [UF] & ", Brasil", type text)
 				in
-				    #"Segmento Adicionado"
+				    #"Local Adicionado"
 
 	annotation PBI_ResultType = Table
 

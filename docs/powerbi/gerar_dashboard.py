@@ -246,9 +246,13 @@ def linhas(nome, x, y, w, h, cat, series, titulo, cores, tracejada=None, nomes=N
                    "Y": [proj(s, n) for s, n in zip(series, nomes or [None] * len(series))]},
                   titulo, (cat, "Ascending"), obj)
 
-def tabela(nome, x, y, w, h, colunas, titulo, ordem, total=True):
-    obj = None if total else {"total": props(totals=lit(False))}
-    return visual(nome, "tableEx", x, y, w, h, {"Values": [proj(f, r) for f, r in colunas]}, titulo, ordem, obj)
+def tabela(nome, x, y, w, h, colunas, titulo, ordem, total=True, larguras=None):
+    """larguras: px de cada coluna, para a tabela ocupar o painel todo (sem isso o Power BI ajusta ao conteúdo)."""
+    obj = {} if total else {"total": props(totals=lit(False))}
+    if larguras:
+        obj["columnWidth"] = [{"properties": {"value": lit(l)}, "selector": {"metadata": f"{f[1]}.{f[2]}"}}
+                              for (f, _), l in zip(colunas, larguras)]
+    return visual(nome, "tableEx", x, y, w, h, {"Values": [proj(f, r) for f, r in colunas]}, titulo, ordem, obj or None)
 
 # ---------------- campos ----------------
 FAT, LUCRO, MARGEM = M("fato_Vendas", "Faturamento"), M("fato_Vendas", "Lucro Total"), M("fato_Vendas", "Margem %")
@@ -336,7 +340,8 @@ paginas = [
                "Faturamento por dia da semana", "Dia", ordem_por_valor=False),
         tabela("p2_produtos", MX, L2_Y, ESQ_L, L2_H, [
             (C("dim_Produtos", "Produto"), "Produto"), (C("dim_Produtos", "Cor"), "Cor"),
-            (ITENS, "Itens"), (FAT, "Faturamento"), (MARGEM, "Margem")], "Produtos mais vendidos", (FAT, "Descending")),
+            (ITENS, "Itens"), (FAT, "Faturamento"), (MARGEM, "Margem")], "Produtos mais vendidos", (FAT, "Descending"),
+            larguras=[250, 140, 80, 130, 90]),  # 690 px: painel de 744 menos respiro e barra de rolagem
         barras("p2_categoria_itens", "clusteredBarChart", DIR_X, L2_Y, DIR_L, L2_H, [CAT, C("dim_Produtos", "Produto")],
                ITENS, "Itens vendidos por categoria e produto"),
     ]),
@@ -344,7 +349,7 @@ paginas = [
      [(EST, "Peças em estoque", I_CAIXA), (VAL_EST, "Valor em estoque", I_RECEITA),
       (SKU_AT, "SKUs em atenção", I_ALERTA), (SAI, "Saídas (un.)", I_ATIV)], [
         linhas("p3_fluxo", MX, L1_Y, 560, L1_H, MES, [SAI, ENT], "Saídas x reposições por mês",
-               [SERIES[0], SERIES[1]], nomes=["Saídas", "Reposições"]),
+               [SERIES[0], TXT2], nomes=["Saídas", "Reposições"]),
         barras("p3_por_cat", "clusteredBarChart", MX, L2_Y, 560, L2_H, CAT, EST, "Peças em estoque por categoria"),
         tabela("p3_situacao", MX + 560 + GAP, TOPO_PAINEIS, 1280 - 2 * MX - 560 - GAP, ALTO_H, [
             (C("dim_Produtos", "SKU"), "SKU"), (C("dim_Produtos", "Produto"), "Produto"),
@@ -376,10 +381,18 @@ paginas = [
     ("metas_equipe", "Metas e Equipe", "Metas e equipe", SUB,
      [(META, "Meta", I_BANDEIRA), (FAT, "Faturamento", I_RECEITA), (ATING, "Atingimento da meta", I_META),
       (DEV, "Taxa de devolução", I_TROCA)], [
-        visual("p5_matriz", "pivotTable", MX, L1_Y, 1280 - 2 * MX, 276,
+        visual("p5_matriz", "pivotTable", MX, L1_Y, 760, 276,
                {"Rows": [proj(CAT, "Categoria")], "Columns": [proj(C("dim_Calendario", "Ano_Trimestre"), "Trimestre")],
                 "Values": [proj(ATING, "Atingimento")]},
                "Atingimento da meta por categoria e trimestre"),  # por mês eram 27 colunas e a matriz rolava
+        # ao lado da matriz (que ocupa ~750 px com 10 trimestres): o valor em R$ por trás do atingimento
+        visual("p5_trimestre", "clusteredColumnChart", MX + 760 + GAP, L1_Y, 1280 - 2 * MX - 760 - GAP, 276,
+               {"Category": [proj(C("dim_Calendario", "Ano_Trimestre"), "Trimestre", ativo=True)],
+                "Y": [proj(FAT), proj(META)]},
+               "Faturamento x meta por trimestre", (C("dim_Calendario", "Ano_Trimestre"), "Ascending"),
+               {"dataPoint": [{"properties": {"fill": cor(c)}, "selector": {"metadata": m}}
+                              for m, c in (("fato_Vendas.Faturamento", SERIES[0]), ("fato_Metas.Meta", TXT3))],
+                "legend": props(show=lit(True)), "labels": props(show=lit(False))}),
         tabela("p5_vendedoras", MX, L1_Y + 276 + GAP, 600, FIM - (L1_Y + 276 + GAP), [
             (C("dim_Vendedores", "Nome"), "Vendedora"), (C("dim_Vendedores", "Cargo"), "Cargo"),
             (PED_E, "Pedidos"), (FAT, "Faturamento"), (TICKET, "Ticket médio"), (DEV, "Devoluções")],

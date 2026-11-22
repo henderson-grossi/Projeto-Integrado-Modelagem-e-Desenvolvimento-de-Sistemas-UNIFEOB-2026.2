@@ -3,7 +3,7 @@ table dim_Calendario
 	dataCategory: Time
 
 	measure Período = LOWER(FORMAT(MIN(dim_Calendario[Data]), "mmm/yyyy") & " a " & FORMAT(MAX(dim_Calendario[Data]), "mmm/yyyy"))
-		lineageTag: 3bd6e6f7-e166-4536-b7f8-f118736d8085
+		lineageTag: d5725f10-94bb-4db7-8128-a0806d637a05
 
 	column Data
 		dataType: dateTime

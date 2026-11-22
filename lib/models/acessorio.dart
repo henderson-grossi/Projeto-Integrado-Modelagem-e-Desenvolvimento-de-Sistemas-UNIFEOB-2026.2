@@ -24,4 +24,11 @@ class Acessorio extends Produto {
   @override
   String get resumo =>
       material == null ? super.resumo : '${super.resumo} · $material';
+
+  @override
+  Map<String, dynamic> toMap() => {
+        ...super.toMap(),
+        'tipo': 'acessorio',
+        'material': material,
+      };
 }

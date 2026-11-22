@@ -14,6 +14,7 @@
 // A demo existe para escrever no console.
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:rvlabel_app/core/moeda.dart';
@@ -158,6 +159,23 @@ Future<void> main(List<String> args) async {
 
   _etapa('Mensagem do pedido (a que vai para o WhatsApp)');
   for (final linha in sacola.mensagemPedido(numeroPedido: 1024).trimRight().split('\n')) {
+    print('  | $linha');
+  }
+
+  _etapa('Lista de objetos: filtrar e ordenar List<Produto>');
+  final comPreco = pecas.where((p) => p.preco != null).toList()
+    ..sort((a, b) => a.preco!.compareTo(b.preco!));
+  _mostra('com preço, do mais barato', comPreco.map((p) => p.nome).join(', '));
+  _mostra('só acessórios', pecas.whereType<Acessorio>().map((p) => p.nome).join(', '));
+
+  _etapa('Conversão toMap / toJson (interface Serializavel)');
+  _mostra('bolsa.toMap()', bolsa.toMap());
+  _mostra('blusa.toJson()', blusa.toJson());
+  final copia = Produto.fromJson(jsonDecode(bolsa.toJson()) as Map<String, dynamic>);
+  _mostra('fromJson(bolsa.toJson())', '${copia.runtimeType}: ${copia.resumo}');
+  _nota('A ida e a volta preservam a subclasse: o campo "tipo" escolhe Peca ou Acessorio.');
+  print('  sacola.toJson():');
+  for (final linha in const JsonEncoder.withIndent('  ').convert(sacola.toMap()).split('\n')) {
     print('  | $linha');
   }
 

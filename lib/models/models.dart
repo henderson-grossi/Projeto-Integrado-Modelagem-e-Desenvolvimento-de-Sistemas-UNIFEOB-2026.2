@@ -6,4 +6,5 @@ export 'categoria.dart';
 export 'item_sacola.dart';
 export 'peca.dart';
 export 'produto.dart';
+export 'serializavel.dart';
 export 'variante_cor.dart';

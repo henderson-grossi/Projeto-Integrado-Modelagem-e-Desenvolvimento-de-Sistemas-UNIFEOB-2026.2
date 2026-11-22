@@ -1,3 +1,5 @@
+import 'serializavel.dart';
+
 /// Uma cor disponível para a peça. A foto original é reaproveitada e
 /// recolorida por filtro, então novas cores = só uma linha no catalogo.json.
 ///
@@ -7,7 +9,7 @@
 ///
 /// Dart puro (sem Flutter), para rodar também na demo de terminal. O filtro
 /// que recolore a foto fica na UI (extensão em ui/componentes.dart).
-class VarianteCor {
+class VarianteCor with Serializavel {
   const VarianteCor({required this.nome, this.hue = 0, this.tom});
 
   final String nome;
@@ -24,6 +26,16 @@ class VarianteCor {
           : int.parse('FF${hex.replaceFirst('#', '')}', radix: 16),
     );
   }
+
+  /// Inverso do [VarianteCor.fromJson]: o tom volta para "#RRGGBB".
+  @override
+  Map<String, dynamic> toMap() => {
+        'nome': nome,
+        'hue': hue,
+        'tom': tom == null
+            ? null
+            : '#${(tom! & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}',
+      };
 
   bool get ehOriginal => hue == 0 && tom == null;
 }

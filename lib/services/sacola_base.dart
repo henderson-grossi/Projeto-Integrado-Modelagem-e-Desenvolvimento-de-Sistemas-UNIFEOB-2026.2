@@ -4,7 +4,7 @@ import '../models/models.dart';
 /// Regras da sacola de compras em Dart puro (sem Flutter): o app usa pela
 /// [Sacola], que só acrescenta o aviso à tela, e a demo de terminal usa direto.
 /// O mapa interno é privado: quem usa só enxerga getters e métodos.
-class SacolaBase {
+class SacolaBase with Serializavel {
   final Map<String, ItemSacola> _itens = {};
 
   List<ItemSacola> get itens => List.unmodifiable(_itens.values);
@@ -46,6 +46,15 @@ class SacolaBase {
     _itens.clear();
     aoMudar();
   }
+
+  /// A lista de objetos vira uma lista de mapas: cada item se converte sozinho.
+  @override
+  Map<String, dynamic> toMap() => {
+        'itens': [for (final i in _itens.values) i.toMap()],
+        'quantidadeTotal': quantidadeTotal,
+        'total': double.parse(total.toStringAsFixed(2)), // corta ruído de ponto flutuante
+        'temPrecoPendente': temPrecoPendente,
+      };
 
   /// Texto enviado no "Fechar pedido pelo WhatsApp".
   String mensagemPedido({int? numeroPedido}) {

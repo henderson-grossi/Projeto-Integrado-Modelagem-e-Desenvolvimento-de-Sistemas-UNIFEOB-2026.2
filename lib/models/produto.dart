@@ -2,11 +2,12 @@ import '../core/moeda.dart';
 import 'acessorio.dart';
 import 'categoria.dart';
 import 'peca.dart';
+import 'serializavel.dart';
 import 'variante_cor.dart';
 
 /// Classe-base (abstrata) de tudo que a loja vende.
 /// Os dados ficam PRIVADOS (_) e só mudam por get/set com validação.
-abstract class Produto {
+abstract class Produto with Serializavel {
   Produto({
     required this.id,
     required String nome,
@@ -48,6 +49,19 @@ abstract class Produto {
 
   /// Texto curto exibido na vitrine. Subclasses podem estender.
   String get resumo => '$rotuloTipo · ${categoria.rotulo}';
+
+  /// Campos comuns, nas mesmas chaves do catalogo.json (volta pelo [Produto.fromJson]).
+  /// Cada subclasse reaproveita este mapa com `super.toMap()` e soma os seus.
+  @override
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'nome': _nome,
+        'categoria': categoria.name,
+        'descricao': descricao,
+        'preco': _preco,
+        'fotos': _fotos,
+        'cores': [for (final c in _cores) c.toMap()],
+      };
 
   static String _validarNome(String valor) {
     final limpo = valor.trim();

@@ -1,0 +1,143 @@
+<!doctype html>
+<!-- Diagrama do fluxo de dados do dashboard. PNG: msedge --headless --window-size=1920,1080
+     --force-device-scale-factor=1.5 --screenshot=diagrama-fluxo-de-dados.png diagrama-fluxo-de-dados.html -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Fluxo de dados RV Label</title>
+<style>
+  :root { --bg:#0B0B0C; --painel:#1C1C1F; --cab:#26262A; --borda:#2A2A2E; --txt:#F4F1EE; --txt2:#A8A3A0;
+          --txt3:#6E6A68; --marca:#B3121E; --azul:#3987E5; --verde:#199E70; --ouro:#C98500; --lilas:#9085E9; }
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1920px; height: 1080px; background: var(--bg); color: var(--txt);
+         font-family: "Segoe UI", sans-serif; padding: 40px 40px 32px; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 18px; }
+  .rv { width: 56px; height: 56px; border-radius: 13px; background: var(--marca); display: grid; place-items: center;
+        font-weight: 700; font-size: 22px; }
+  h1 { font-size: 30px; font-weight: 700; }
+  header p { color: var(--txt2); font-size: 15px; margin-top: 2px; }
+  .fluxo { flex: 1; display: grid; margin-top: 34px;
+           grid-template-columns: repeat(6, minmax(0, 1fr) 30px) minmax(0, 1fr); }
+  .etapa { background: var(--painel); border-radius: 16px; padding: 22px 18px 18px; display: flex; flex-direction: column; }
+  .etapa h2 { font-size: 24px; font-weight: 700; margin: 0 0 4px; line-height: 1.2; }
+  .etapa h2 span { color: var(--c); margin-right: 6px; }
+  .ferr { font-size: 15px; color: #8E8986; margin-bottom: 20px; }
+  ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+  li { font-size: 17px; line-height: 1.4; color: var(--txt2); padding-left: 12px; position: relative; }
+  li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--c); }
+  b { color: var(--txt); font-weight: 600; }
+  code { font-family: "Cascadia Mono", Consolas, monospace; font-size: 14.5px; color: var(--txt); background: var(--cab);
+         padding: 0 4px; border-radius: 4px; }
+  .seta { display: grid; place-items: center; }
+  .seta svg { width: 26px; height: 26px; }
+  .caixa { margin-top: auto; background: var(--cab); border-radius: 10px; padding: 12px 14px; font-size: 15px;
+           color: var(--txt2); line-height: 1.35; }
+  .caixa b { display: block; margin-bottom: 2px; }
+  footer { margin-top: 22px; display: flex; align-items: center; gap: 14px; background: var(--painel); border-radius: 14px;
+           padding: 16px 22px; font-size: 16px; color: var(--txt2); }
+  footer .tag { color: var(--txt); font-weight: 700; white-space: nowrap; }
+  footer svg { width: 20px; height: 20px; flex: none; }
+</style>
+</head>
+<body>
+<header>
+  <div class="rv">RV</div>
+  <div>
+    <h1>Fluxo de dados do dashboard de vendas</h1>
+    <p>Do pedido feito no app ou no site até o dashboard publicado no Power BI Service</p>
+  </div>
+</header>
+
+<main class="fluxo">
+  <section class="etapa" style="--c:var(--txt2)">
+    <h2><span>1</span>Origem dos dados</h2>
+    <span class="ferr">App Flutter · site React · API Node.js</span>
+    <ul>
+      <li>Clientes fazem <b>pedidos</b> pelo app e pelo site</li>
+      <li>A <b>API</b> grava pedidos, itens, clientes, catálogo e estoque</li>
+      <li>No painel, a loja informa <b>custo</b> das peças, <b>metas</b> e o <b>status</b> do pedido (Entregue)</li>
+    </ul>
+    <div class="caixa"><b>Demonstração</b>2.257 pedidos simulados (ago/2024 a out/2026), marcados com <code>simulado = 1</code></div>
+  </section>
+  <div class="seta"><svg viewBox="0 0 24 24"><path d="M4 12h14m-5-6 6 6-6 6" fill="none" stroke="#6E6A68" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <section class="etapa" style="--c:var(--azul)">
+    <h2><span>2</span>Banco MySQL</h2>
+    <span class="ferr">MySQL 8 · banco <code>rv_label</code></span>
+    <ul>
+      <li><b>14 tabelas</b>: pedido, item_pedido, produto, cliente, categoria, vendedor, meta_mensal, estoque_mensal…</li>
+      <li><b>8 views</b> <code>bi_*</code> já no formato do modelo (vendas, estoque, metas, produtos, categorias, clientes, vendedores, calendário)</li>
+      <li>Usuário <code>powerbi_leitura</code>: só <b>SELECT</b> nas views, sem CPF, telefone ou endereço</li>
+    </ul>
+    <div class="caixa"><b>Script</b><code style="font-size:13px">rv_label_banco_mysql.sql</code></div>
+  </section>
+  <div class="seta"><svg viewBox="0 0 24 24"><path d="M4 12h14m-5-6 6 6-6 6" fill="none" stroke="#6E6A68" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <section class="etapa" style="--c:var(--lilas)">
+    <h2><span>3</span>Conexão</h2>
+    <span class="ferr">MySQL Connector/NET · modo Importação</span>
+    <ul>
+      <li>Conector <b>MySQL</b> do Power BI lê as 8 views</li>
+      <li>Parâmetros <b>Servidor</b> (<code>localhost</code>) e <b>Banco</b> (<code>rv_label</code>): trocar para o banco hospedado sem mexer nas consultas</li>
+      <li>Senha guardada no Windows, <b>nunca</b> dentro do arquivo</li>
+    </ul>
+  </section>
+  <div class="seta"><svg viewBox="0 0 24 24"><path d="M4 12h14m-5-6 6 6-6 6" fill="none" stroke="#6E6A68" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <section class="etapa" style="--c:var(--verde)">
+    <h2><span>4</span>Tratamento no Power Query</h2>
+    <span class="ferr">Linguagem M · 8 consultas</span>
+    <ul>
+      <li><b>Tipos</b> de dados (data, texto, decimal)</li>
+      <li><b>Limpeza</b>: espaços e caracteres invisíveis, UF vazia vira "NI", duplicatas removidas</li>
+      <li>Função <code>fxNomeProprio</code> padroniza nomes</li>
+      <li>Colunas novas: <b>Região</b>, Primeiro nome, <b>Segmento</b> (mescla com as vendas) e <b>Local</b> para o mapa</li>
+    </ul>
+  </section>
+  <div class="seta"><svg viewBox="0 0 24 24"><path d="M4 12h14m-5-6 6 6-6 6" fill="none" stroke="#6E6A68" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <section class="etapa" style="--c:var(--ouro)">
+    <h2><span>5</span>Modelagem</h2>
+    <span class="ferr">Esquema estrela</span>
+    <ul>
+      <li><b>3 fatos</b>: Vendas, Estoque, Metas</li>
+      <li><b>5 dimensões</b>: Calendário, Produtos, Categorias, Clientes, Vendedores</li>
+      <li>Relações <b>1:N</b> de cada dimensão para os fatos</li>
+      <li>Hierarquias <b>Calendário</b> (Ano › Trimestre › Mês) e <b>Geografia</b> (Região › UF › Cidade)</li>
+    </ul>
+  </section>
+  <div class="seta"><svg viewBox="0 0 24 24"><path d="M4 12h14m-5-6 6 6-6 6" fill="none" stroke="#6E6A68" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <section class="etapa" style="--c:#D55181">
+    <h2><span>6</span>Indicadores DAX</h2>
+    <span class="ferr">37 medidas</span>
+    <ul>
+      <li><b>Vendas</b>: Faturamento, Lucro, Margem %, Ticket médio, Descontos</li>
+      <li><b>Metas</b>: Meta, Atingimento %</li>
+      <li><b>Produtos</b>: Curva ABC (% acumulado, classe)</li>
+      <li><b>Clientes</b>: novas x recorrentes, % recompra, clientes a reativar</li>
+      <li><b>Estoque</b>: valor em estoque, SKUs em atenção, situação</li>
+    </ul>
+  </section>
+  <div class="seta"><svg viewBox="0 0 24 24"><path d="M4 12h14m-5-6 6 6-6 6" fill="none" stroke="#6E6A68" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <section class="etapa" style="--c:#EF5A5F">
+    <h2><span>7</span>Dashboard</h2>
+    <span class="ferr">Power BI Desktop → Power BI Service</span>
+    <ul>
+      <li><b>Template</b> no PowerPoint, exportado em PNG como fundo das 6 páginas</li>
+      <li><b>Segmentações</b> de mês e categoria e botões de navegação</li>
+      <li><b>Drill-down</b> nas hierarquias e <b>mapa</b> de faturamento por cidade</li>
+      <li>Cartões de KPI, gráficos, tabelas e matriz</li>
+    </ul>
+    <div class="caixa"><b>Publicação</b>Power BI Service: link do relatório e atualização agendada</div>
+  </section>
+</main>
+
+<footer>
+  <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" fill="none" stroke="#F4F1EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <span class="tag">Atualização</span>
+  <span>Ao clicar em <b>Atualizar</b> (ou na atualização agendada do Service, via gateway), o Power BI relê as views do MySQL, refaz os passos do Power Query, recalcula as medidas e redesenha os visuais. Nenhuma etapa é feita à mão.</span>
+</footer>
+</body>
+</html>

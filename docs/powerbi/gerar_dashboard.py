@@ -1,7 +1,8 @@
-"""Gera tema, medidas e as 6 páginas do dashboard RV Label no projeto .pbip (formato PBIR + TMDL).
-Uso: python -I docs/powerbi/gerar_dashboard.py docs/powerbi/projeto   (precisa de Pillow e das fontes Segoe do Windows)
-Depois, abra o .pbip no Power BI Desktop e clique em Atualizar."""
-import sys, json, re, shutil
+"""Gera tema, medidas, o template visual (PowerPoint) e as 6 páginas do dashboard RV Label no projeto .pbip
+(formato PBIR + TMDL). O fundo de cada página é um slide do template exportado como imagem pelo PowerPoint.
+Uso: python -I docs/powerbi/gerar_dashboard.py docs/powerbi/projeto
+(Windows com PowerPoint e as fontes Segoe; pip install python-pptx). Depois, abra o .pbip no Power BI e clique em Atualizar."""
+import sys, json, re, shutil, subprocess, tempfile
 from pathlib import Path
 
 raiz = Path(sys.argv[1])
@@ -159,9 +160,14 @@ def props(**kw): return [{"properties": {k: v for k, v in kw.items()}}]
 
 def M(ent, prop): return ("Measure", ent, prop)
 def C(ent, prop): return ("Column", ent, prop)
-def field(f): return {f[0]: {"Expression": {"SourceRef": {"Entity": f[1]}}, "Property": f[2]}}
+def H(ent, hier, nivel): return ("Hierarchy", ent, hier, nivel)  # nível de hierarquia do modelo (drill-down)
+def field(f):
+    if f[0] == "Hierarchy":
+        return {"HierarchyLevel": {"Expression": {"Hierarchy": {"Expression": {"SourceRef": {"Entity": f[1]}},
+                                                                "Hierarchy": f[2]}}, "Level": f[3]}}
+    return {f[0]: {"Expression": {"SourceRef": {"Entity": f[1]}}, "Property": f[2]}}
 def proj(f, nome=None, ativo=False):
-    p = {"field": field(f), "queryRef": f"{f[1]}.{f[2]}", "nativeQueryRef": f[2]}
+    p = {"field": field(f), "queryRef": ".".join(f[1:]), "nativeQueryRef": " ".join(f[2:])}
     if nome: p["displayName"] = nome
     if ativo: p["active"] = True
     return p
@@ -215,14 +221,17 @@ def kpis(prefixo, medidas):
     return out
 
 def barras(nome, tipo, x, y, w, h, cat, val, titulo, rotulo_cat=None, ordem_por_valor=True, rotulos=True):
+    """cat pode ser uma lista de campos: o eixo vira hierarquia e o visual ganha as setas de drill-down."""
+    cats = cat if isinstance(cat, list) else [cat]
     obj = {"labels": props(show=lit(rotulos), labelDisplayUnits=lit(1))}
     if rotulos:  # com rótulo em cada barra o eixo de valor só repete informação
         obj["valueAxis"] = props(show=lit(False))
     if tipo == "clusteredBarChart":  # mais espaço para nomes longos ("Cartão de Crédito", nomes das vendedoras)
         obj["categoryAxis"] = props(maxMarginFactor=lit(45))
-    ordem = (val, "Descending") if ordem_por_valor else (cat, "Ascending")
-    return visual(nome, tipo, x, y, w, h, {"Category": [proj(cat, rotulo_cat, ativo=True)], "Y": [proj(val)]},
-                  titulo, ordem, obj)
+    ordem = (val, "Descending") if ordem_por_valor else (cats[0], "Ascending")
+    return visual(nome, tipo, x, y, w, h,
+                  {"Category": [proj(c, rotulo_cat if i == 0 else None, ativo=i == 0) for i, c in enumerate(cats)],
+                   "Y": [proj(val)]}, titulo, ordem, obj)
 
 def linhas(nome, x, y, w, h, cat, series, titulo, cores, tracejada=None, nomes=None):
     obj = {"dataPoint": [{"properties": {"fill": cor(c)}, "selector": {"metadata": f"{s[1]}.{s[2]}"}}
@@ -237,9 +246,13 @@ def linhas(nome, x, y, w, h, cat, series, titulo, cores, tracejada=None, nomes=N
                    "Y": [proj(s, n) for s, n in zip(series, nomes or [None] * len(series))]},
                   titulo, (cat, "Ascending"), obj)
 
-def tabela(nome, x, y, w, h, colunas, titulo, ordem, total=True):
-    obj = None if total else {"total": props(totals=lit(False))}
-    return visual(nome, "tableEx", x, y, w, h, {"Values": [proj(f, r) for f, r in colunas]}, titulo, ordem, obj)
+def tabela(nome, x, y, w, h, colunas, titulo, ordem, total=True, larguras=None):
+    """larguras: px de cada coluna, para a tabela ocupar o painel todo (sem isso o Power BI ajusta ao conteúdo)."""
+    obj = {} if total else {"total": props(totals=lit(False))}
+    if larguras:
+        obj["columnWidth"] = [{"properties": {"value": lit(l)}, "selector": {"metadata": f"{f[1]}.{f[2]}"}}
+                              for (f, _), l in zip(colunas, larguras)]
+    return visual(nome, "tableEx", x, y, w, h, {"Values": [proj(f, r) for f, r in colunas]}, titulo, ordem, obj or None)
 
 # ---------------- campos ----------------
 FAT, LUCRO, MARGEM = M("fato_Vendas", "Faturamento"), M("fato_Vendas", "Lucro Total"), M("fato_Vendas", "Margem %")
@@ -319,21 +332,24 @@ paginas = [
     ("vendas", "Vendas", "Vendas", SUB,
      [(FAT, "Faturamento", I_RECEITA), (ITENS, "Itens vendidos", I_SACOLA), (TICKET, "Ticket médio", I_CARTAO),
       (DESC, "Descontos concedidos", I_ETIQUETA)], [
-        barras("p2_mensal", "clusteredColumnChart", MX, L1_Y, ESQ_L, L1_H, MES, FAT, "Faturamento mensal", "Mês",
-               ordem_por_valor=False, rotulos=False),  # 27 meses: rótulo em cada barra se sobrepunha
+        # hierarquia Calendário: abre por ano e desce para trimestre e mês (drill-down)
+        barras("p2_mensal", "clusteredColumnChart", MX, L1_Y, ESQ_L, L1_H,
+               [H("dim_Calendario", "Calendário", n) for n in ("Ano", "Trimestre", "Mês")], FAT,
+               "Faturamento por ano, trimestre e mês (drill-down)", ordem_por_valor=False),
         barras("p2_semana", "clusteredBarChart", DIR_X, L1_Y, DIR_L, L1_H, C("dim_Calendario", "Dia_Semana"), FAT,
                "Faturamento por dia da semana", "Dia", ordem_por_valor=False),
         tabela("p2_produtos", MX, L2_Y, ESQ_L, L2_H, [
             (C("dim_Produtos", "Produto"), "Produto"), (C("dim_Produtos", "Cor"), "Cor"),
-            (ITENS, "Itens"), (FAT, "Faturamento"), (MARGEM, "Margem")], "Produtos mais vendidos", (FAT, "Descending")),
-        barras("p2_categoria_itens", "clusteredBarChart", DIR_X, L2_Y, DIR_L, L2_H, CAT, ITENS,
-               "Itens vendidos por categoria"),
+            (ITENS, "Itens"), (FAT, "Faturamento"), (MARGEM, "Margem")], "Produtos mais vendidos", (FAT, "Descending"),
+            larguras=[250, 140, 80, 130, 90]),  # 690 px: painel de 744 menos respiro e barra de rolagem
+        barras("p2_categoria_itens", "clusteredBarChart", DIR_X, L2_Y, DIR_L, L2_H, [CAT, C("dim_Produtos", "Produto")],
+               ITENS, "Itens vendidos por categoria e produto"),
     ]),
     ("estoque", "Estoque", "Estoque", "Posição do último mês filtrado",
      [(EST, "Peças em estoque", I_CAIXA), (VAL_EST, "Valor em estoque", I_RECEITA),
       (SKU_AT, "SKUs em atenção", I_ALERTA), (SAI, "Saídas (un.)", I_ATIV)], [
         linhas("p3_fluxo", MX, L1_Y, 560, L1_H, MES, [SAI, ENT], "Saídas x reposições por mês",
-               [SERIES[0], SERIES[1]], nomes=["Saídas", "Reposições"]),
+               [SERIES[0], TXT2], nomes=["Saídas", "Reposições"]),
         barras("p3_por_cat", "clusteredBarChart", MX, L2_Y, 560, L2_H, CAT, EST, "Peças em estoque por categoria"),
         tabela("p3_situacao", MX + 560 + GAP, TOPO_PAINEIS, 1280 - 2 * MX - 560 - GAP, ALTO_H, [
             (C("dim_Produtos", "SKU"), "SKU"), (C("dim_Produtos", "Produto"), "Produto"),
@@ -343,10 +359,19 @@ paginas = [
     ("clientes", "Clientes", "Clientes", SUB,
      [(CLI, "Clientes ativos", I_PESSOAS), (PED_E, "Pedidos entregues", I_CAIXA),
       (PED_CLI, "Pedidos por cliente", I_PESSOA), (TICKET, "Ticket médio", I_CARTAO)], [
-        barras("p4_cidade", "clusteredBarChart", MX, TOPO_PAINEIS, 600, ALTO_H, C("dim_Clientes", "Cidade"), FAT,
-               "Faturamento por cidade", "Cidade"),
-        barras("p4_faixa", "clusteredColumnChart", MX + 600 + GAP, L1_Y, 1280 - 2 * MX - 600 - GAP, 230,
-               C("dim_Clientes", "Faixa_Etaria"), FAT, "Faturamento por faixa etária", "Faixa etária",
+        # mapa padrão (o Azure Maps depende de liberação no locatário); a coluna Local ("Cidade, UF, Brasil",
+        # categoria Local) evita que o mapa ache a cidade em outro país
+        visual("p4_mapa", "map", MX, TOPO_PAINEIS, 600, ALTO_H,
+               {"Category": [proj(C("dim_Clientes", "Local"), "Cidade", ativo=True)], "Size": [proj(FAT)],
+                "Tooltips": [proj(CLI, "Clientes ativos"), proj(PED_E, "Pedidos entregues")]},
+               "Faturamento por cidade",
+               objetos={"mapStyles": props(mapTheme=lit("canvasDark")),
+                        "dataPoint": props(defaultColor=cor(SERIES[0]))}),
+        barras("p4_geo", "clusteredBarChart", MX + 600 + GAP, L1_Y, 304, 230,
+               [H("dim_Clientes", "Geografia", n) for n in ("Região", "UF", "Cidade")], FAT,
+               "Por região, UF e cidade (drill-down)"),
+        barras("p4_faixa", "clusteredColumnChart", MX + 600 + GAP + 304 + GAP, L1_Y, 1280 - MX - (MX + 600 + GAP + 304 + GAP),
+               230, C("dim_Clientes", "Faixa_Etaria"), FAT, "Por faixa etária", "Faixa etária",
                ordem_por_valor=False),
         tabela("p4_top", MX + 600 + GAP, L1_Y + 230 + GAP, 1280 - 2 * MX - 600 - GAP, FIM - (L1_Y + 230 + GAP), [
             (C("dim_Clientes", "Nome"), "Cliente"), (C("dim_Clientes", "Cidade"), "Cidade"),
@@ -356,10 +381,18 @@ paginas = [
     ("metas_equipe", "Metas e Equipe", "Metas e equipe", SUB,
      [(META, "Meta", I_BANDEIRA), (FAT, "Faturamento", I_RECEITA), (ATING, "Atingimento da meta", I_META),
       (DEV, "Taxa de devolução", I_TROCA)], [
-        visual("p5_matriz", "pivotTable", MX, L1_Y, 1280 - 2 * MX, 276,
+        visual("p5_matriz", "pivotTable", MX, L1_Y, 760, 276,
                {"Rows": [proj(CAT, "Categoria")], "Columns": [proj(C("dim_Calendario", "Ano_Trimestre"), "Trimestre")],
                 "Values": [proj(ATING, "Atingimento")]},
                "Atingimento da meta por categoria e trimestre"),  # por mês eram 27 colunas e a matriz rolava
+        # ao lado da matriz (que ocupa ~750 px com 10 trimestres): o valor em R$ por trás do atingimento
+        visual("p5_trimestre", "clusteredColumnChart", MX + 760 + GAP, L1_Y, 1280 - 2 * MX - 760 - GAP, 276,
+               {"Category": [proj(C("dim_Calendario", "Ano_Trimestre"), "Trimestre", ativo=True)],
+                "Y": [proj(FAT), proj(META)]},
+               "Faturamento x meta por trimestre", (C("dim_Calendario", "Ano_Trimestre"), "Ascending"),
+               {"dataPoint": [{"properties": {"fill": cor(c)}, "selector": {"metadata": m}}
+                              for m, c in (("fato_Vendas.Faturamento", SERIES[0]), ("fato_Metas.Meta", TXT3))],
+                "legend": props(show=lit(True)), "labels": props(show=lit(False))}),
         tabela("p5_vendedoras", MX, L1_Y + 276 + GAP, 600, FIM - (L1_Y + 276 + GAP), [
             (C("dim_Vendedores", "Nome"), "Vendedora"), (C("dim_Vendedores", "Cargo"), "Cargo"),
             (PED_E, "Pedidos"), (FAT, "Faturamento"), (TICKET, "Ticket médio"), (DEV, "Devoluções")],
@@ -403,80 +436,235 @@ paginas = [
     ]),
 ]
 
-# ---------------- fundos (PNG 2x) no estilo do modelo ----------------
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
-ESC = 2
-FONTES = "C:/Windows/Fonts/"
-def fonte(arq, tam): return ImageFont.truetype(FONTES + arq, tam * ESC)
-def rgb(h): return tuple(int(h[i:i + 2], 16) for i in (1, 3, 5))
-def caixa(x, y, w, h): return [x * ESC, y * ESC, (x + w) * ESC - 1, (y + h) * ESC - 1]
+# ---------------- template visual (PowerPoint) -> imagens de fundo ----------------
+# O template fica em docs/powerbi/template/: um slide de guia (cores, fontes, estrutura) e, para cada página, um slide
+# de layout (o que vai em cada área) e um slide de fundo. O PowerPoint exporta o slide de fundo em PNG e ele vira a
+# imagem de fundo da página no Power BI; os visuais, transparentes, ficam por cima dos painéis desenhados nele.
+from pptx import Presentation
+from pptx.util import Emu, Pt
+from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE, MSO_CONNECTOR
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.oxml.ns import qn
 
-def quadrado_icone(base, x, y, glifo):
-    """Quadrado com degradê diagonal do vermelho da marca, sombra suave e ícone branco (como no modelo)."""
-    s = ICONE * ESC
-    sombra = Image.new("RGBA", base.size, (0, 0, 0, 0))
-    ImageDraw.Draw(sombra).rounded_rectangle(caixa(x + 3, y + 4, ICONE, ICONE), 9 * ESC, fill=(0, 0, 0, 170))
-    base.alpha_composite(sombra.filter(ImageFilter.GaussianBlur(4 * ESC)))
-    a, b = rgb("#8E0E18"), rgb("#E5484D")
-    grad = Image.new("RGBA", (s, s))
-    px = grad.load()
-    for i in range(s):
-        for j in range(s):
-            t = (i + j) / (2 * s - 2)
-            px[i, j] = tuple(int(a[k] + (b[k] - a[k]) * t) for k in range(3)) + (255,)
-    mask = Image.new("L", (s, s), 0)
-    ImageDraw.Draw(mask).rounded_rectangle([0, 0, s - 1, s - 1], 9 * ESC, fill=255)
-    base.paste(grad, (x * ESC, y * ESC), mask)
-    d = ImageDraw.Draw(base)
-    f = fonte("segmdl2.ttf", 20)
-    l, t_, r, b_ = d.textbbox((0, 0), glifo, font=f)
-    d.text(((x + ICONE / 2) * ESC - (l + r) / 2, (y + ICONE / 2) * ESC - (t_ + b_) / 2), glifo, font=f, fill=rgb(TXT))
+TEMPLATE = raiz.parent / "template"
+VERMELHO, FONTE_ICONES = "#B3121E", "Segoe MDL2 Assets"
+def emu(px): return Emu(round(px * 9525))  # slide de 1280 x 720 px a 96 dpi (1 px = 9525 EMU)
+def rgbc(h): return RGBColor.from_string(h[1:])
 
-def desenhar_navegacao(d, atual):
-    """Botões de navegação: ícone + nome centralizados; a página atual em vermelho da marca."""
-    f_ico, f_txt, f_txt_b = fonte("segmdl2.ttf", 11), fonte("segoeui.ttf", 10), fonte("segoeuib.ttf", 10)
-    for pid, rotulo, glifo, x, y in nav_celulas():
-        ativo = pid == atual
-        d.rounded_rectangle(caixa(x, y, NAV_CW, NAV_CH), 7 * ESC, fill=rgb("#B3121E" if ativo else PAINEL))
-        ft, cor_txt = (f_txt_b, TXT) if ativo else (f_txt, TXT2)
-        li, ti, ri, bi = d.textbbox((0, 0), glifo, font=f_ico)
-        lt, tt, rt, bt = d.textbbox((0, 0), rotulo, font=ft)
-        espaco = 5 * ESC
-        x0 = (x + NAV_CW / 2) * ESC - ((ri - li) + espaco + (rt - lt)) / 2
-        meio = (y + NAV_CH / 2) * ESC
-        d.text((x0 - li, meio - (ti + bi) / 2), glifo, font=f_ico, fill=rgb(cor_txt))
-        d.text((x0 + (ri - li) + espaco - lt, meio - (tt + bt) / 2), rotulo, font=ft, fill=rgb(cor_txt))
+def forma(sl, x, y, w, h, cor_hex, raio=0, nome=None, borda=None):
+    s = sl.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE if raio else MSO_SHAPE.RECTANGLE,
+                            emu(x), emu(y), emu(w), emu(h))
+    if raio:
+        s.adjustments[0] = raio / min(w, h)
+    s.fill.solid()
+    s.fill.fore_color.rgb = rgbc(cor_hex)
+    if borda:
+        s.line.color.rgb, s.line.width = rgbc(borda), emu(1)
+    else:
+        s.line.fill.background()
+    s.shadow.inherit = False  # o estilo padrão da forma traria a sombra do tema
+    if nome:
+        s.name = nome
+    return s
 
-def desenhar_fundo(titulo, sub, icones, paineis, destino, atual):
-    im = Image.new("RGBA", (1280 * ESC, 720 * ESC), rgb(BG) + (255,))
-    d = ImageDraw.Draw(im)
-    # marca "RV" + título + subtítulo
-    # cabeçalho sobe 20 px para caber o navegador de páginas embaixo (y 82 a 126)
-    d.rounded_rectangle(caixa(MX, 20, 52, 52), 12 * ESC, fill=rgb("#B3121E"))
-    f = fonte("segoeuib.ttf", 20)
-    l, t_, r, b_ = d.textbbox((0, 0), "RV", font=f)
-    d.text(((MX + 26) * ESC - (l + r) / 2, 46 * ESC - (t_ + b_) / 2), "RV", font=f, fill=rgb(TXT))
-    d.text((86 * ESC, 20 * ESC), titulo, font=fonte("segoeuib.ttf", 21), fill=rgb(TXT))
-    if sub:  # sem texto fixo, o cartão Período ocupa este lugar
-        d.text((86 * ESC, 53 * ESC), sub, font=fonte("segoeui.ttf", 11), fill=rgb(TXT2))
-    # fundos dos filtros
-    f_rot = fonte("segoeui.ttf", 11)
+def texto(sl, x, y, w, h, partes, cor_hex, alinhar=PP_ALIGN.LEFT, meio=False, nome=None):
+    """Uma linha de texto; partes = [(texto, fonte, tamanho em px, negrito)] (1 px do Power BI = 0,75 pt)."""
+    tb = sl.shapes.add_textbox(emu(x), emu(y), emu(w), emu(h))
+    tf = tb.text_frame
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+    tf.word_wrap = False
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE if meio else MSO_ANCHOR.TOP
+    p = tf.paragraphs[0]
+    p.alignment = alinhar
+    for t, f, tam, negrito in partes:
+        r = p.add_run()
+        r.text = t
+        r.font.size, r.font.bold, r.font.name = Pt(tam * 0.75), negrito, f
+        r.font.color.rgb = rgbc(cor_hex)
+        if f == FONTE_ICONES:  # os ícones ficam na área de uso privado do Unicode, desenhada com a fonte "sym"
+            latin = r._r.rPr.find(qn("a:latin"))
+            for tag in ("a:sym", "a:cs", "a:ea"):
+                latin.addnext(latin.makeelement(qn(tag), {"typeface": f}))
+    if nome:
+        tb.name = nome
+    return tb
+
+def sombra(s):
+    """Sombra suave para baixo e à direita (3 px, 4 px), 8 px de desfoque."""
+    eff = s._element.spPr.find(qn("a:effectLst"))
+    sh = eff.makeelement(qn("a:outerShdw"), {"blurRad": str(emu(8)), "dist": str(emu(5)), "dir": "3180000",
+                                             "algn": "tl", "rotWithShape": "0"})
+    clr = sh.makeelement(qn("a:srgbClr"), {"val": "000000"})
+    clr.append(clr.makeelement(qn("a:alpha"), {"val": "67000"}))
+    sh.append(clr)
+    eff.append(sh)
+
+def quadrado_icone(sl, x, y, glifo):
+    """Quadrado com degradê diagonal do vermelho da marca, sombra suave e ícone branco."""
+    s = forma(sl, x, y, ICONE, ICONE, VERMELHO, 9, "Ícone")
+    s.fill.gradient()
+    s.fill.gradient_angle = 315  # escuro no canto superior esquerdo, claro no inferior direito
+    a, b = s.fill.gradient_stops
+    a.position, b.position = 0, 1
+    a.color.rgb, b.color.rgb = rgbc("#8E0E18"), rgbc("#E5484D")
+    sombra(s)
+    texto(sl, x, y, ICONE, ICONE, [(glifo, FONTE_ICONES, 20, False)], TXT, PP_ALIGN.CENTER, meio=True)
+
+def novo_slide(prs):
+    sl = prs.slides.add_slide(prs.slide_layouts[6])  # layout em branco
+    sl.background.fill.solid()
+    sl.background.fill.fore_color.rgb = rgbc(BG)
+    return sl
+
+def marca(sl, x, y):
+    forma(sl, x, y, 52, 52, VERMELHO, 12, "Marca")
+    texto(sl, x, y, 52, 52, [("RV", FONTE, 20, True)], TXT, PP_ALIGN.CENTER, meio=True)
+
+NOMES_VISUAL = {"lineChart": "Gráfico de linhas", "clusteredBarChart": "Gráfico de barras",
+                "clusteredColumnChart": "Gráfico de colunas", "columnChart": "Colunas empilhadas",
+                "tableEx": "Tabela", "pivotTable": "Matriz", "lineClusteredColumnComboChart": "Colunas e linha",
+                "map": "Mapa"}
+
+def titulo_visual(v):
+    t = v["visualContainerObjects"]["title"][0]["properties"].get("text")
+    return t["expr"]["Literal"]["Value"][1:-1].replace("''", "'") if t else ""
+
+def slide_pagina(prs, pid, titulo, sub, indicadores, graficos, layout):
+    """Fundo da página; com layout=True também escreve o que vai em cada área (slide de layout do template)."""
+    sl = novo_slide(prs)
+    marca(sl, MX, 20)
+    texto(sl, 86, 20, 205, 30, [(titulo, FONTE, 21, True)], TXT, nome="Título da página")
+    if sub:
+        texto(sl, 86, 53, 205, 16, [(sub, FONTE, 11, False)], TXT2, nome="Subtítulo")
+    elif layout:  # sem texto fixo, o cartão Período (medida DAX) ocupa este lugar
+        texto(sl, 86, 52, 205, 16, [("[período: mmm/aaaa a mmm/aaaa]", FONTE, 10, False)], TXT3)
+    # filtros: o rótulo fica no fundo e a caixa da segmentação, à direita
     for y, rotulo in zip(FILTROS_Y, ("Mês", "Categoria")):
-        d.rounded_rectangle(caixa(FILTRO_X, y, FILTRO_W, FILTRO_H), 10 * ESC, fill=rgb(PAINEL))
-        l, t_, r, b_ = d.textbbox((0, 0), rotulo, font=f_rot)
-        d.text(((FILTRO_X + 12) * ESC, (y + FILTRO_H / 2) * ESC - (t_ + b_) / 2), rotulo, font=f_rot, fill=rgb(TXT2))
-    # tiles dos indicadores
-    for glifo, (x, y, w, h) in zip(icones, tiles(len(icones))):
-        d.rounded_rectangle(caixa(x, y, w, h), 12 * ESC, fill=rgb(PAINEL))
-        quadrado_icone(im, x + 12, y + (h - ICONE) // 2, glifo)
-        d = ImageDraw.Draw(im)
-    desenhar_navegacao(d, atual)
-    # linha divisória
-    d.line([MX * ESC, 134 * ESC, (1280 - MX) * ESC, 134 * ESC], fill=rgb("#3A3A3F"), width=ESC)
+        forma(sl, FILTRO_X, y, FILTRO_W, FILTRO_H, PAINEL, 10, f"Filtro {rotulo}")
+        texto(sl, FILTRO_X + 12, y, FILTRO_ROTULO_W, FILTRO_H, [(rotulo, FONTE, 11, False)], TXT2, meio=True)
+        if layout:
+            texto(sl, FILTRO_X + FILTRO_ROTULO_W, y, FILTRO_W - FILTRO_ROTULO_W - 8, FILTRO_H,
+                  [("segmentação ▾", FONTE, 9, False)], TXT3, meio=True)
+    # indicadores: tile + quadrado do ícone; o cartão com o número fica por cima, à direita do ícone
+    for (_, rotulo, glifo), (x, y, w, h) in zip(indicadores, tiles(len(indicadores))):
+        forma(sl, x, y, w, h, PAINEL, 12, f"Indicador {rotulo}")
+        quadrado_icone(sl, x + 12, y + (h - ICONE) // 2, glifo)
+        if layout:
+            tx = x + 12 + ICONE + 10
+            texto(sl, tx, y + 24, x + w - tx - 4, 24, [("[valor]", FONTE, 16, True)], TXT3)
+            texto(sl, tx, y + 50, x + w - tx - 4, 16, [(f"KPI: {rotulo}", FONTE, 9, False)], TXT2)
+    # navegação: ícone + nome centralizados; a página atual em vermelho da marca
+    for p_id, rotulo, glifo, x, y in nav_celulas():
+        ativo = p_id == pid
+        forma(sl, x, y, NAV_CW, NAV_CH, VERMELHO if ativo else PAINEL, 7, f"Botão {rotulo}")
+        texto(sl, x, y, NAV_CW, NAV_CH, [(glifo, FONTE_ICONES, 11, False), ("  ", FONTE, 10, False),
+                                         (rotulo, FONTE, 10, ativo)], TXT if ativo else TXT2, PP_ALIGN.CENTER, meio=True)
+    ln = sl.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, emu(MX), emu(134), emu(1280 - MX), emu(134))
+    ln.line.color.rgb, ln.line.width, ln.name = rgbc("#3A3A3F"), emu(1), "Divisória"
     # painéis dos visuais
-    for x, y, w, h in paineis:
-        d.rounded_rectangle(caixa(x, y, w, h), 14 * ESC, fill=rgb(PAINEL))
-    im.convert("RGB").save(destino, optimize=True)
+    for g in graficos:
+        x, y, w, h = (g["position"][k] for k in ("x", "y", "width", "height"))
+        forma(sl, x, y, w, h, PAINEL, 14, f"Painel {g['name']}")
+        if layout:
+            v = g["visual"]
+            drill = len(v["query"]["queryState"].get("Category", {}).get("projections", [])) > 1
+            tipo = NOMES_VISUAL.get(v["visualType"], v["visualType"]) + ("  ·  drill-down" if drill else "")
+            texto(sl, x, y + h / 2 - 24, w, 22, [(tipo, FONTE, 11, False)], TXT3, PP_ALIGN.CENTER, meio=True)
+            texto(sl, x, y + h / 2, w, 22, [(titulo_visual(v), FONTE, 13, True)], TXT2, PP_ALIGN.CENTER, meio=True)
+    return sl
+
+def slide_guia(prs):
+    """Guia do template: estrutura da página, cores e tipografia."""
+    sl = novo_slide(prs)
+    marca(sl, 40, 32)
+    texto(sl, 108, 30, 700, 34, [("Template visual do dashboard", FONTE, 26, True)], TXT)
+    texto(sl, 108, 66, 1100, 20, [("RV Label  ·  páginas de 1280 × 720 px  ·  tema escuro  ·  cada slide de fundo "
+                                   "é exportado em PNG e importado como imagem de fundo da página no Power BI",
+                                   FONTE, 12, False)], TXT2)
+    # estrutura da página, em miniatura (50%)
+    ox, oy, k = 40, 136, 0.5
+    texto(sl, ox, oy - 28, 400, 20, [("Estrutura de cada página", FONTE, 14, True)], TXT)
+    forma(sl, ox, oy, 1280 * k, 720 * k, BG, 6, "Página", borda="#3A3A3F")
+    areas = [("1", "Marca, título da página e período filtrado", (MX, 20, 256, 54)),
+             ("2", "Navegação entre as 6 páginas (botões)", (NAV_X, NAV_Y, NAV_W, NAV_H)),
+             ("3", "Filtros e segmentações (mês e categoria)", (FILTRO_X, TILE_Y, FILTRO_W, TILE_H)),
+             ("4", "Indicadores (KPIs em DAX) com ícone", (TILE_X0, TILE_Y, 1280 - MX - TILE_X0, TILE_H)),
+             ("5", "Gráficos, tabelas, matriz e mapa em painéis", (MX, TOPO_PAINEIS, 1280 - 2 * MX, FIM - TOPO_PAINEIS))]
+    for n, _, (x, y, w, h) in areas:
+        forma(sl, ox + x * k, oy + y * k, w * k, h * k, PAINEL, 5, f"Área {n}")
+        texto(sl, ox + x * k, oy + y * k, w * k, h * k, [(n, FONTE, 22 if n == "5" else 14, True)],
+              SERIES[0], PP_ALIGN.CENTER, meio=True)
+    ln = sl.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, emu(ox + MX * k), emu(oy + 134 * k),
+                                 emu(ox + (1280 - MX) * k), emu(oy + 134 * k))
+    ln.line.color.rgb, ln.line.width = rgbc("#3A3A3F"), emu(1)
+    for i, (n, desc, _) in enumerate(areas):
+        y = oy + 720 * k + 18 + i * 24
+        texto(sl, ox, y, 24, 20, [(n, FONTE, 13, True)], SERIES[0])
+        texto(sl, ox + 24, y, 600, 20, [(desc, FONTE, 13, False)], TXT2)
+    texto(sl, ox, 654, 640, 18, [(f"Grade: margem {MX} px  ·  espaço entre painéis {GAP} px  ·  cantos 14 px (painéis), "
+                                 "12 px (indicadores), 10 px (filtros), 7 px (botões)", FONTE, 11, False)], TXT3)
+    texto(sl, ox, 676, 640, 18, [("Visuais sem fundo nem borda: o painel arredondado vem da imagem de fundo.",
+                                  FONTE, 11, False)], TXT3)
+    # cores
+    cx = 730
+    texto(sl, cx, oy - 28, 400, 20, [("Cores", FONTE, 14, True)], TXT)
+    cores = [("Fundo", BG), ("Painel", PAINEL), ("Cabeçalho de tabela", PAINEL_CAB), ("Borda e grade", BORDA),
+             ("Marca", VERMELHO), ("Texto", TXT), ("Texto secundário", TXT2), ("Texto auxiliar", TXT3)]
+    for i, (nome, c) in enumerate(cores):
+        x, y = cx + (i // 4) * 260, oy + (i % 4) * 36
+        forma(sl, x, y, 28, 28, c, 6, f"Cor {nome}", borda="#3A3A3F")
+        texto(sl, x + 40, y, 210, 28, [(nome, FONTE, 12, False), (f"   {c}", FONTE, 11, False)], TXT2, meio=True)
+    texto(sl, cx, oy + 158, 500, 20, [("Séries dos gráficos e status (bom, atenção, ruim)", FONTE, 14, True)], TXT)
+    for i, c in enumerate(SERIES + [OK, ATENCAO, RUIM]):
+        x = cx + i * 56 + (16 if i >= len(SERIES) else 0)
+        forma(sl, x, oy + 188, 40, 28, c, 6, f"Série {c}")
+        texto(sl, x - 8, oy + 220, 56, 14, [(c, FONTE, 9, False)], TXT3, PP_ALIGN.CENTER)
+    # tipografia
+    texto(sl, cx, oy + 254, 500, 20, [("Tipografia", FONTE, 14, True)], TXT)
+    fontes = [("Título da página", FONTE, 21, True, "Segoe UI Bold 21 px"),
+              ("Título dos visuais", FONTE_FORTE, 12, False, "Segoe UI Semibold 12 px"),
+              ("Rótulos, eixos e filtros", FONTE, 11, False, "Segoe UI 10–11 px"),
+              ("R$ 12.345", "Segoe UI Light", 26, False, "Segoe UI Light 26 px (números)")]
+    for i, (amostra, f, tam, negrito, desc) in enumerate(fontes):
+        y = oy + 284 + i * 40
+        texto(sl, cx, y, 260, 34, [(amostra, f, tam, negrito)], TXT, meio=True)
+        texto(sl, cx + 270, y, 240, 34, [(desc, FONTE, 11, False)], TXT3, meio=True)
+    y = oy + 284 + 4 * 40
+    texto(sl, cx, y, 260, 34, [("    ".join((I_RECEITA, I_GRAFICO, I_CAIXA, I_META, I_PESSOAS, I_ALERTA)),
+                                FONTE_ICONES, 18, False)], TXT, meio=True)
+    texto(sl, cx + 270, y, 240, 34, [("Segoe MDL2 Assets (ícones)", FONTE, 11, False)], TXT3, meio=True)
+
+def exportar_slides(pptx, destinos):
+    """O PowerPoint exporta cada slide em PNG 2560 x 1440 (2x, nítido em telas de alta densidade)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        ps = ("$ErrorActionPreference = 'Stop'\n"
+              "$app = New-Object -ComObject PowerPoint.Application\n"
+              f"$p = $app.Presentations.Open('{pptx.resolve()}', -1, 0, 0)\n"  # só leitura, sem janela
+              "try { foreach ($i in 1..$p.Slides.Count) { "
+              f"$p.Slides.Item($i).Export((Join-Path '{tmp}' \"slide$i.png\"), 'PNG', 2560, 1440) }} }}\n"
+              # não fecha o PowerPoint se a pessoa estiver com outra apresentação aberta
+              "finally { $p.Close(); if ($app.Presentations.Count -eq 0) { $app.Quit() } }")
+        subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps], check=True)
+        assert len(list(Path(tmp).glob("slide*.png"))) == len(destinos), "o PowerPoint não exportou todos os slides"
+        for i, destino in enumerate(destinos, 1):
+            shutil.move(str(Path(tmp) / f"slide{i}.png"), destino)
+
+def gerar_template(reg):
+    TEMPLATE.mkdir(exist_ok=True)
+    for f in TEMPLATE.glob("*.png"):
+        f.unlink()
+    prs = Presentation()
+    prs.slide_width, prs.slide_height = emu(1280), emu(720)
+    slide_guia(prs)
+    destinos = [TEMPLATE / "0-guia.png"]
+    for i, (pid, _, titulo, sub, indicadores, graficos) in enumerate(paginas, 1):
+        slide_pagina(prs, pid, titulo, sub, indicadores, graficos, layout=True)
+        slide_pagina(prs, pid, titulo, sub, indicadores, graficos, layout=False)
+        destinos += [TEMPLATE / f"{i}-layout-{pid}.png", reg / f"fundo_{pid}.png"]
+    arq = TEMPLATE / "Template-Dashboard-RV-Label.pptx"
+    prs.save(arq)
+    exportar_slides(arq, destinos)
 
 # ---------------- grava páginas ----------------
 PAGES = REP / "definition" / "pages"
@@ -486,13 +674,11 @@ for d in PAGES.iterdir():
     if d.is_dir(): shutil.rmtree(d)
 for f in reg.glob("fundo_*.png"):
     f.unlink()
+gerar_template(reg)
 imagens = []
 for pid, nome, titulo, sub, indicadores, graficos in paginas:
     img = f"fundo_{pid}.png"
     imagens.append(img)
-    desenhar_fundo(titulo, sub, [i for _, _, i in indicadores],
-                   [(g["position"]["x"], g["position"]["y"], g["position"]["width"], g["position"]["height"])
-                    for g in graficos], reg / img, pid)
     visuais = filtros(pid) + kpis(pid, indicadores) + graficos + ([] if sub else [periodo(pid)]) + navegacao(pid)
     pdir = PAGES / pid
     (pdir / "visuals").mkdir(parents=True)

@@ -1,8 +1,9 @@
 import '../core/moeda.dart';
 import 'produto.dart';
+import 'serializavel.dart';
 
 /// Produto + escolhas do cliente (cor, tamanho, quantidade).
-class ItemSacola {
+class ItemSacola with Serializavel {
   ItemSacola({
     required this.peca,
     required this.cor,
@@ -27,6 +28,17 @@ class ItemSacola {
   String get chave => '${peca.id}|$cor|$tamanho';
 
   double? get subtotal => peca.preco == null ? null : peca.preco! * _quantidade;
+
+  @override
+  Map<String, dynamic> toMap() => {
+        'produtoId': peca.id,
+        'nome': peca.nome,
+        'cor': cor,
+        'tamanho': tamanho,
+        'quantidade': _quantidade,
+        'precoUnitario': peca.preco,
+        'subtotal': subtotal,
+      };
 
   String get linhaPedido =>
       '• ${_quantidade}x ${peca.nome} ($cor, $tamanho) - '

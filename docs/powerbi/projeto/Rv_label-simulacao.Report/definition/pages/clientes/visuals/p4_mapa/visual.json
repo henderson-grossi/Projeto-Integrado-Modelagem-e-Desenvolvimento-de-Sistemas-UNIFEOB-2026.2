@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
-  "name": "p4_cidade",
+  "name": "p4_mapa",
   "position": {
     "x": 20,
     "y": 150,
@@ -10,7 +10,7 @@
     "tabOrder": 6000
   },
   "visual": {
-    "visualType": "clusteredBarChart",
+    "visualType": "map",
     "query": {
       "queryState": {
         "Category": {
@@ -23,17 +23,17 @@
                       "Entity": "dim_Clientes"
                     }
                   },
-                  "Property": "Cidade"
+                  "Property": "Local"
                 }
               },
-              "queryRef": "dim_Clientes.Cidade",
-              "nativeQueryRef": "Cidade",
+              "queryRef": "dim_Clientes.Local",
+              "nativeQueryRef": "Local",
               "displayName": "Cidade",
               "active": true
             }
           ]
         },
-        "Y": {
+        "Size": {
           "projections": [
             {
               "field": {
@@ -50,25 +50,41 @@
               "nativeQueryRef": "Faturamento"
             }
           ]
-        }
-      },
-      "sortDefinition": {
-        "sort": [
-          {
-            "field": {
-              "Measure": {
-                "Expression": {
-                  "SourceRef": {
-                    "Entity": "fato_Vendas"
-                  }
-                },
-                "Property": "Faturamento"
-              }
+        },
+        "Tooltips": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Clientes Ativos"
+                }
+              },
+              "queryRef": "fato_Vendas.Clientes Ativos",
+              "nativeQueryRef": "Clientes Ativos",
+              "displayName": "Clientes ativos"
             },
-            "direction": "Descending"
-          }
-        ],
-        "isDefaultSort": true
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_Vendas"
+                    }
+                  },
+                  "Property": "Pedidos Entregues"
+                }
+              },
+              "queryRef": "fato_Vendas.Pedidos Entregues",
+              "nativeQueryRef": "Pedidos Entregues",
+              "displayName": "Pedidos entregues"
+            }
+          ]
+        }
       }
     },
     "visualContainerObjects": {
@@ -95,46 +111,30 @@
     },
     "drillFilterOtherVisuals": true,
     "objects": {
-      "labels": [
+      "mapStyles": [
         {
           "properties": {
-            "show": {
+            "mapTheme": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "labelDisplayUnits": {
-              "expr": {
-                "Literal": {
-                  "Value": "1D"
+                  "Value": "'canvasDark'"
                 }
               }
             }
           }
         }
       ],
-      "valueAxis": [
+      "dataPoint": [
         {
           "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "categoryAxis": [
-        {
-          "properties": {
-            "maxMarginFactor": {
-              "expr": {
-                "Literal": {
-                  "Value": "45D"
+            "defaultColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#D9363E'"
+                    }
+                  }
                 }
               }
             }

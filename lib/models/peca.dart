@@ -22,4 +22,12 @@ class Peca extends Produto {
 
   @override
   String get rotuloTipo => 'Peça';
+
+  @override
+  Map<String, dynamic> toMap() => {
+        ...super.toMap(),
+        'tipo': 'peca',
+        'tamanhos': _tamanhos,
+        'fotoCostas': fotoCostas,
+      };
 }

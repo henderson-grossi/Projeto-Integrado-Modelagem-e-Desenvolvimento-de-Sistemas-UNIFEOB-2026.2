@@ -10,8 +10,18 @@ relatório. As views são criadas pela migração `api/migracoes/003-painel-bi-v
 - `projeto/Rv_label-simulacao.pbip`: o dashboard em formato de projeto (texto), sem dados dentro. Abra no Power BI
   Desktop e clique em *Atualizar*. Para mandar a alguém, *Arquivo > Salvar como* `.pbix` (o `.pbix` leva os dados
   junto, inclusive nomes de clientes, por isso não fica no git).
-- `gerar_dashboard.py`: gera as páginas, o tema, as imagens de fundo e as medidas do projeto. Mudanças de layout são feitas
-  nele: `python -I docs/powerbi/gerar_dashboard.py docs/powerbi/projeto` (precisa de Pillow e das fontes Segoe do Windows).
+- `gerar_dashboard.py`: gera as páginas, o tema, o template e as medidas do projeto. Mudanças de layout são feitas
+  nele: `python -I docs/powerbi/gerar_dashboard.py docs/powerbi/projeto` (Windows com PowerPoint e as fontes Segoe;
+  `pip install python-pptx`).
+- `template/Template-Dashboard-RV-Label.pptx`: template visual editável (guia de cores e fontes e, para cada página, um
+  slide de layout e um de fundo). O PowerPoint exporta os slides de fundo em PNG e eles viram o fundo das páginas;
+  os PNGs do guia e dos layouts ficam na mesma pasta.
+- `diagrama-fluxo-de-dados.png` (fonte em `.html`): do MySQL ao dashboard publicado.
+
+Interatividade: segmentações de mês e categoria em todas as páginas, botões de navegação, drill-down nas hierarquias
+`Calendário` (Ano > Trimestre > Mês, em Vendas) e `Geografia` (Região > UF > Cidade, em Clientes), categoria > produto
+em Vendas, e mapa de faturamento por cidade (coluna `Local` = "Cidade, UF, Brasil", criada no Power Query). O mapa é o
+visual padrão (Bing): o Azure Maps precisa de uma opção do locatário que a conta da equipe não tem.
 - `dados-simulados.sql`: dados de demonstração (abaixo).
 
 | View | Tabela no modelo | O que tem |

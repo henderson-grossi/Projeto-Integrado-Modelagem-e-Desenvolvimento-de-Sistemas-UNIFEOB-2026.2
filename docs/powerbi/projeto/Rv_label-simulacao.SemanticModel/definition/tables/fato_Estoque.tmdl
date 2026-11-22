@@ -3,26 +3,26 @@ table fato_Estoque
 
 	measure 'Valor em Estoque' = CALCULATE(SUM(fato_Estoque[Valor_Estoque_Final]), LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque))))
 		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
-		lineageTag: c8e55707-f191-489d-b1f2-7de4255728b7
+		lineageTag: 0979495a-27c1-4aba-84db-7fc417fe86f1
 
 	measure 'Entradas (un.)' = SUM(fato_Estoque[Entradas])
 		formatString: #,0
-		lineageTag: d84416ad-4dec-40c9-85d0-e293b228c5c6
+		lineageTag: d696a6b1-b2f8-4c2e-a184-08726c70b434
 
 	measure 'Saídas (un.)' = SUM(fato_Estoque[Saidas])
 		formatString: #,0
-		lineageTag: 46661e0a-7840-4edf-acc3-9f3b4bcf2317
+		lineageTag: 0099a7ad-6626-479d-b112-a02b9bf2d0f2
 
 	measure 'SKUs em Atenção' = CALCULATE(COUNTROWS(fato_Estoque), fato_Estoque[Status_Estoque] <> "OK", LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque)))) + 0
 		formatString: 0
-		lineageTag: a937f2db-ea0a-4e72-aada-46733fdb7613
+		lineageTag: 7c564418-a40f-4c23-85ca-19c669dfb36f
 
 	measure 'Estoque Mínimo' = CALCULATE(SUM(fato_Estoque[Estoque_Minimo]), LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque))))
 		formatString: 0
-		lineageTag: 6ee8c64e-aaac-4716-9ea4-348aeaedcf3a
+		lineageTag: e46ad7eb-1f59-4fdd-a965-6611e3e12c7a
 
 	measure Situação = VAR e = [Estoque Final] VAR m = [Estoque Mínimo] RETURN IF(ISBLANK(e), BLANK(), IF(e < m, "Abaixo do mínimo", IF(e <= 2 * m, "Atenção", "OK")))
-		lineageTag: bdf07226-0a93-4164-883f-14284a90a514
+		lineageTag: 6334361a-fe77-4960-95e2-f7cb97c7acc0
 
 	measure 'Estoque Final' = CALCULATE(SUM(fato_Estoque[Estoque_Final]), LASTNONBLANK(dim_Calendario[Data], CALCULATE(COUNTROWS(fato_Estoque))))
 		formatString: 0

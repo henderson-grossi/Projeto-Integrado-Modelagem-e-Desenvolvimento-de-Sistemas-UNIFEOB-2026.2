@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RV Label · O projeto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ===========================================
+   VIEWPORT FITTING: MANDATORY BASE STYLES
+   =========================================== */
+html, body { height: 100%; overflow-x: hidden; }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+.slide {
+  width: 100vw; height: 100vh; height: 100dvh; overflow: hidden;
+  scroll-snap-align: start; display: flex; flex-direction: column; position: relative;
+}
+.slide-content {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  max-height: 100%; overflow: hidden; padding: var(--slide-padding);
+  width: 100%; max-width: 1280px; margin: 0 auto; position: relative; z-index: 1;
+}
+
+/* ===========================================
+   TEMA: cores e fontes da apresentação RV Label (.pptx)
+   Troque aqui para mudar o visual do deck inteiro.
+   =========================================== */
+:root {
+  --vinho-escuro: #160A0C;   /* fundo dos slides escuros */
+  --vinho: #3B0A11;          /* painéis */
+  --vinho-card: #241214;
+  --vermelho: #A3222B;       /* destaque no fundo claro */
+  --coral: #E0484F;          /* destaque no fundo escuro */
+  --creme: #F5EFE7;          /* fundo dos slides claros */
+  --creme-card: #FBF8F3;
+  --tinta: #2A1416;          /* texto no claro */
+  --tinta-suave: #5E4A4A;
+  --nevoa: #C9B8AE;          /* texto secundário no escuro */
+  --papel: #F3EBE3;          /* texto no escuro */
+  --codigo-bg: #0D1117;
+
+  --serif: "DM Serif Display", Georgia, serif;
+  --sans: "Manrope", system-ui, sans-serif;
+  --mono: "JetBrains Mono", Consolas, monospace;
+
+  --title-size: clamp(2rem, 6.5vw, 5.2rem);
+  --h2-size: clamp(1.5rem, 3.6vw, 3rem);
+  --h3-size: clamp(1rem, 1.6vw, 1.35rem);
+  --body-size: clamp(0.85rem, 1.35vw, 1.15rem);
+  --small-size: clamp(0.68rem, 0.95vw, 0.85rem);
+  --code-size: clamp(0.62rem, 0.95vw, 0.88rem);
+
+  --slide-padding: clamp(1rem, 4.5vw, 4.5rem);
+  --content-gap: clamp(0.75rem, 2.4vw, 2.4rem);
+  --element-gap: clamp(0.35rem, 1vw, 1rem);
+  --ease: cubic-bezier(.2,.7,.2,1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--vinho-escuro); color: var(--papel); -webkit-font-smoothing: antialiased; }
+
+/* Variações de fundo */
+.escuro { background: radial-gradient(120% 90% at 85% 10%, #3B0A11 0%, var(--vinho-escuro) 55%); color: var(--papel); }
+.claro  { background: var(--creme); color: var(--tinta); }
+.claro::before { /* grão de papel sutil */
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+  background-image: radial-gradient(rgba(42,20,22,.05) 1px, transparent 1px); background-size: 4px 4px;
+}
+
+/* Forma abstrata decorativa (anel) */
+.anel { position: absolute; border-radius: 50%; border: 1px solid currentColor; opacity: .14; pointer-events: none; }
+
+/* Tipografia */
+.tag {
+  font-size: var(--small-size); font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: .7em; margin-bottom: var(--element-gap);
+}
+.tag::before { content: ""; width: 2.2em; height: 2px; background: currentColor; }
+.escuro .tag { color: var(--coral); }
+.claro .tag { color: var(--vermelho); }
+h1 { font-family: var(--serif); font-weight: 400; font-size: var(--title-size); line-height: .98; letter-spacing: -.01em; }
+h2 { font-family: var(--serif); font-weight: 400; font-size: var(--h2-size); line-height: 1.05; margin-bottom: var(--content-gap); }
+h1 em, h2 em { font-style: italic; }
+.escuro h1 em, .escuro h2 em { color: var(--coral); }
+.claro h2 em { color: var(--vermelho); }
+h3 { font-size: var(--h3-size); font-weight: 800; letter-spacing: -.01em; }
+p, li { font-size: var(--body-size); line-height: 1.5; }
+.suave { color: var(--nevoa); }
+.claro .suave { color: var(--tinta-suave); }
+code.inline { font-family: var(--mono); font-size: .88em; padding: .12em .45em; border-radius: 4px; background: rgba(163,34,43,.1); color: var(--vermelho); }
+.escuro code.inline { background: rgba(224,72,79,.14); color: #F2A5A8; }
+
+/* Layout em duas colunas */
+.duas { display: grid; grid-template-columns: 1fr 1.05fr; gap: var(--content-gap); align-items: center; }
+
+/* Lista com marcadores numerados */
+.pontos { list-style: none; display: flex; flex-direction: column; gap: clamp(.5rem, 1.6vh, 1.1rem); }
+.pontos li { display: grid; grid-template-columns: auto 1fr; gap: .9em; align-items: baseline; }
+.pontos li::before {
+  content: counter(item, decimal-leading-zero); counter-increment: item;
+  font-family: var(--mono); font-size: var(--small-size); font-weight: 500; opacity: .7;
+}
+.pontos { counter-reset: item; }
+.claro .pontos li::before { color: var(--vermelho); opacity: 1; }
+.escuro .pontos li::before { color: var(--coral); opacity: 1; }
+.pontos b { font-weight: 800; }
+
+/* Cartão de código */
+.codigo {
+  background: var(--codigo-bg); color: #D6DEE8; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 30px 60px -25px rgba(22,10,12,.55); border: 1px solid rgba(255,255,255,.06);
+}
+.codigo .barra { display: flex; align-items: center; gap: .45rem; padding: .7rem 1rem; border-bottom: 1px solid rgba(255,255,255,.06); }
+.codigo .barra i { width: .6rem; height: .6rem; border-radius: 50%; background: #3a3f48; }
+.codigo .barra i:first-child { background: var(--coral); }
+.codigo .barra span { margin-left: .5rem; font-family: var(--mono); font-size: var(--small-size); color: #8B949E; }
+.codigo pre { font-family: var(--mono); font-size: var(--code-size); line-height: 1.65; padding: clamp(.7rem, 1.6vw, 1.3rem); white-space: pre-wrap; word-break: break-word; }
+.k { color: #FF7B72; } .t { color: #79C0FF; } .s { color: #A5D6FF; } .c { color: #8B949E; font-style: italic; } .n { color: #F2CC60; } .f { color: #D2A8FF; }
+
+/* ---------- Slide 1: capa ---------- */
+.capa .slide-content { justify-content: space-between; }
+.capa .topo { display: flex; justify-content: space-between; font-size: var(--small-size); letter-spacing: .2em; text-transform: uppercase; color: var(--nevoa); }
+.capa h1 { font-size: clamp(3.2rem, 13vw, 10rem); }
+.capa .sub { font-size: clamp(1rem, 2vw, 1.6rem); max-width: 34ch; margin-top: var(--element-gap); color: var(--papel); }
+.disciplinas { display: flex; flex-wrap: wrap; gap: .5rem; }
+.disciplinas span {
+  font-size: var(--small-size); font-weight: 600; padding: .45em 1em; border-radius: 999px;
+  border: 1px solid rgba(243,235,227,.22); color: var(--papel);
+}
+
+/* ---------- Slide 2: quatro partes ---------- */
+.partes { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(.5rem, 1.4vw, 1.1rem); }
+.parte {
+  background: var(--creme-card); border: 1px solid rgba(42,20,22,.08); border-radius: 16px;
+  padding: clamp(.8rem, 1.8vw, 1.5rem); display: flex; flex-direction: column; gap: .5rem;
+  position: relative; overflow: hidden;
+}
+.parte .num { font-family: var(--serif); font-size: clamp(1.8rem, 3.6vw, 3rem); color: var(--vermelho); line-height: 1; }
+.parte .stack { font-family: var(--mono); font-size: var(--small-size); color: var(--tinta-suave); }
+.parte p { font-size: clamp(.78rem, 1.1vw, .98rem); color: var(--tinta-suave); }
+.caminho {
+  margin-top: var(--content-gap); display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .8rem;
+  font-size: var(--body-size); font-weight: 600;
+}
+.caminho .passo { padding: .35em .9em; border-radius: 999px; background: var(--tinta); color: var(--creme); }
+.caminho .seta { color: var(--vermelho); font-weight: 800; }
+.caminho .rotulo { font-size: var(--small-size); letter-spacing: .18em; text-transform: uppercase; color: var(--vermelho); margin-right: .4rem; }
+
+/* ---------- Slide 3: fluxo ---------- */
+.fluxo { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(.4rem, 1.2vw, 1rem); align-items: stretch; }
+.no {
+  border-radius: 14px; padding: clamp(.6rem, 1.4vw, 1.1rem); background: var(--vinho-card);
+  border: 1px solid rgba(243,235,227,.1); display: flex; flex-direction: column; gap: .3rem; position: relative;
+}
+.no .rot { font-size: var(--small-size); letter-spacing: .16em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
+.no p { font-size: clamp(.75rem, 1.05vw, .95rem); color: var(--nevoa); line-height: 1.4; }
+.no.dado { border-left: 4px solid var(--coral); background: #2A1418; }
+.no:not(:last-child)::after { /* seta entre etapas */
+  content: "→"; position: absolute; right: calc(-1 * clamp(.4rem, 1.2vw, 1rem)); top: 50%;
+  transform: translate(50%, -50%); color: var(--coral); font-weight: 800; font-size: var(--body-size); z-index: 2;
+}
+.fluxo-legenda { margin-top: var(--content-gap); display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--element-gap); }
+.fluxo-legenda div { font-size: clamp(.75rem, 1.05vw, .95rem); color: var(--nevoa); border-top: 1px solid rgba(243,235,227,.15); padding-top: .6rem; }
+.fluxo-legenda b { color: var(--papel); display: block; font-size: var(--small-size); letter-spacing: .14em; text-transform: uppercase; margin-bottom: .2rem; }
+
+/* ---------- Transação (modelagem) ---------- */
+.transacao { background: var(--tinta); color: var(--papel); border-radius: 16px; padding: clamp(.9rem, 2vw, 1.6rem); }
+.transacao h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(1.1rem, 2vw, 1.6rem); margin-bottom: .9rem; }
+.transacao ol { list-style: none; display: flex; flex-direction: column; gap: .55rem; }
+.transacao li { display: grid; grid-template-columns: 2.1em 1fr; gap: .6em; align-items: center; font-size: clamp(.8rem, 1.15vw, 1rem); }
+.transacao li span { width: 2.1em; height: 2.1em; border-radius: 50%; display: grid; place-items: center; background: var(--vinho); color: var(--coral); font-family: var(--mono); font-size: .8em; font-weight: 500; }
+.transacao li code { font-family: var(--mono); color: #F2A5A8; font-size: .9em; }
+.transacao .erro { margin-top: .9rem; padding-top: .8rem; border-top: 1px dashed rgba(243,235,227,.2); font-size: var(--small-size); color: var(--nevoa); }
+.transacao .erro code { color: var(--coral); font-family: var(--mono); }
+
+/* ---------- BI ---------- */
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(.5rem, 1.4vw, 1.1rem); margin-top: var(--content-gap); }
+.kpi { border-top: 2px solid var(--coral); padding-top: .8rem; }
+.kpi strong { display: block; font-family: var(--serif); font-weight: 400; font-size: clamp(1.4rem, 3.4vw, 3rem); line-height: 1.05; color: var(--papel); }
+.kpi span { font-size: var(--small-size); letter-spacing: .14em; text-transform: uppercase; color: var(--nevoa); }
+.nota { margin-top: .8rem; font-size: var(--small-size); color: var(--nevoa); opacity: .8; }
+
+/* ---------- Fechamento ---------- */
+.fecho h2 { font-size: clamp(1.8rem, 4.6vw, 4rem); max-width: 20ch; }
+.resumo { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(.5rem, 1.4vw, 1.1rem); }
+.resumo div { border-top: 1px solid rgba(42,20,22,.2); padding-top: .8rem; }
+.resumo b { display: block; font-family: var(--serif); font-weight: 400; font-size: clamp(1.1rem, 2vw, 1.7rem); color: var(--vermelho); }
+.resumo span { font-size: clamp(.8rem, 1.15vw, 1rem); color: var(--tinta-suave); }
+
+/* ---------- Navegação ---------- */
+.progresso { position: fixed; top: 0; left: 0; height: 3px; background: var(--coral); width: 0; z-index: 10; transition: width .5s var(--ease); }
+.nav-dots { position: fixed; right: clamp(.6rem, 1.5vw, 1.4rem); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: .55rem; z-index: 10; }
+.nav-dots button { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--coral); background: transparent; cursor: pointer; padding: 0; transition: transform .3s, background .3s; }
+.nav-dots button[aria-current="true"] { background: var(--coral); transform: scale(1.35); }
+.nav-dots button:focus-visible { outline: 2px solid var(--coral); outline-offset: 3px; }
+.contador { position: fixed; left: clamp(.8rem, 2vw, 1.6rem); bottom: clamp(.6rem, 1.6vh, 1.2rem); font-family: var(--mono); font-size: var(--small-size); color: var(--coral); z-index: 10; mix-blend-mode: normal; }
+.keyboard-hint { position: fixed; right: clamp(.8rem, 2vw, 1.6rem); bottom: clamp(.6rem, 1.6vh, 1.2rem); font-size: var(--small-size); color: var(--nevoa); opacity: .7; z-index: 10; }
+
+/* ---------- Animação de entrada ---------- */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s var(--ease), transform .7s var(--ease); transition-delay: calc(var(--i, 0) * 90ms); }
+.slide.visivel .reveal { opacity: 1; transform: none; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 900px) {
+  .duas { grid-template-columns: 1fr; }
+  .partes, .fluxo, .resumo { grid-template-columns: repeat(2, 1fr); }
+  .no:nth-child(2n)::after { display: none; }
+  .codigo pre { line-height: 1.5; }
+}
+@media (max-width: 600px) {
+  .fluxo-legenda { grid-template-columns: 1fr; }
+  .kpis { grid-template-columns: 1fr; gap: .4rem; }
+  .parte p, .no p { display: none; }        /* no celular fica só o essencial */
+  .esconde-mobile, .capa .topo { display: none; }
+  .keyboard-hint, .nav-dots { display: none; }
+}
+@media (max-height: 700px) {
+  :root {
+    --slide-padding: clamp(0.75rem, 3vw, 2rem);
+    --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+    --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+    --h2-size: clamp(1rem, 3vw, 1.9rem);
+    --code-size: clamp(0.58rem, 0.85vw, 0.78rem);
+  }
+  .capa h1 { font-size: clamp(2.4rem, 9vw, 6rem); }
+  .codigo pre { line-height: 1.45; }
+}
+@media (max-height: 600px) {
+  :root {
+    --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+    --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+    --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+  }
+  .nav-dots, .keyboard-hint, .decorative { display: none; }
+  .parte p, .no p, .fluxo-legenda, .esconde-baixo { display: none; }
+}
+@media (max-height: 500px) {
+  :root {
+    --title-size: clamp(1rem, 3.5vw, 1.5rem);
+    --h2-size: clamp(0.9rem, 2.5vw, 1.3rem);
+    --body-size: clamp(0.65rem, 1vw, 0.85rem);
+    --code-size: 0.6rem;
+  }
+  .duas { grid-template-columns: 1fr 1fr; }
+  .capa h1 { font-size: clamp(2rem, 7vw, 3.6rem); }
+  .capa .topo { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+  html { scroll-behavior: auto; }
+  .reveal { transform: none; }
+}
+</style>
+</head>
+<body>
+<div class="progresso" aria-hidden="true"></div>
+
+<main id="deck">
+
+  <!-- 1 · Capa -->
+  <section class="slide escuro capa" aria-label="Capa">
+    <div class="anel decorative" style="width:55vmax;height:55vmax;right:-18vmax;top:-20vmax;color:var(--coral)"></div>
+    <div class="anel decorative" style="width:38vmax;height:38vmax;right:-8vmax;top:-10vmax;color:var(--coral)"></div>
+    <div class="slide-content">
+      <div class="topo reveal"><span>Apresentação do projeto</span><span>Nov · 2026</span></div>
+      <div>
+        <h1 class="reveal" style="--i:1">RV <em>Label</em></h1>
+        <p class="sub reveal" style="--i:2">Loja de roupas que vende pelo WhatsApp, com app, banco de dados e dashboard de vendas.</p>
+      </div>
+      <div class="disciplinas reveal" style="--i:3">
+        <span>Modelagem de Dados</span><span>Lógica de Programação</span><span>Programação Orientada a Objetos</span><span>Business Intelligence</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · Quatro partes -->
+  <section class="slide claro" aria-label="Visão geral">
+    <div class="slide-content">
+      <span class="tag reveal">Visão geral</span>
+      <h2 class="reveal" style="--i:1">O projeto em <em>quatro partes</em></h2>
+      <div class="partes">
+        <article class="parte reveal" style="--i:2"><span class="num">01</span><h3>App</h3><span class="stack">Flutter · Dart</span><p>Vitrine, sacola, “Meus pedidos” e painel de administração.</p></article>
+        <article class="parte reveal" style="--i:3"><span class="num">02</span><h3>API e MySQL</h3><span class="stack">Node.js · MySQL</span><p>A API recebe os pedidos; o banco guarda produtos, estoque e pedidos.</p></article>
+        <article class="parte reveal" style="--i:4"><span class="num">03</span><h3>Terminal</h3><span class="stack">Dart</span><p>Programa com menu de administração e menu de cliente.</p></article>
+        <article class="parte reveal" style="--i:5"><span class="num">04</span><h3>Power BI</h3><span class="stack">Power Query · DAX</span><p>Dashboard com seis páginas para acompanhar as vendas.</p></article>
+      </div>
+      <div class="caminho reveal" style="--i:6">
+        <span class="rotulo">Caminho de um pedido</span>
+        <span class="passo">Sacola no app</span><span class="seta">→</span>
+        <span class="passo">API grava no MySQL</span><span class="seta">→</span>
+        <span class="passo">Power BI lê o banco</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · Fluxo de dados -->
+  <section class="slide escuro" aria-label="Fluxo de dados">
+    <div class="slide-content">
+      <span class="tag reveal">Como os dados andam</span>
+      <h2 class="reveal" style="--i:1">Do clique na sacola ao <em>dashboard</em></h2>
+      <div class="fluxo">
+        <div class="no reveal" style="--i:2"><span class="rot">1 · App e terminal</span><h3>Flutter e Dart</h3><p>Cliente monta a sacola; administradora cuida da loja.</p></div>
+        <div class="no reveal" style="--i:3"><span class="rot">2 · API</span><h3>Node.js</h3><p>Valida o pedido em JSON, faz a transação e o login.</p></div>
+        <div class="no dado reveal" style="--i:4"><span class="rot">D1 · MySQL</span><h3>Rv_Label</h3><p>13 tabelas. Só a API fala com o banco.</p></div>
+        <div class="no reveal" style="--i:5"><span class="rot">3 · Power BI</span><h3>Views bi_*</h3><p>Lê as views com usuário só de leitura e mostra os KPIs.</p></div>
+      </div>
+      <div class="fluxo-legenda reveal" style="--i:6">
+        <div><b>WhatsApp</b>Fecha a venda com a mensagem do pedido.</div>
+        <div><b>Gestão da loja</b>Acompanha as vendas no dashboard.</div>
+        <div><b>Segurança</b>O BI não vê telefone, CPF nem endereço.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Modelagem de Dados -->
+  <section class="slide claro" aria-label="Modelagem de Dados">
+    <div class="slide-content">
+      <div class="duas">
+        <div>
+          <span class="tag reveal">1 · Modelagem de Dados</span>
+          <h2 class="reveal" style="--i:1">O banco guarda os dados <em>com regras</em></h2>
+          <ul class="pontos">
+            <li class="reveal" style="--i:2"><span>Modelo lógico no MySQL Workbench e <code class="inline">schema.sql</code> com <b>13 tabelas</b> ligadas por chaves.</span></li>
+            <li class="reveal" style="--i:3"><span><b>Chave composta:</b> a variação é produto + cor + tamanho, e o estoque fica nela.</span></li>
+            <li class="reveal" style="--i:4"><span><b>CHECK</b> no banco: preço ≥ 0, quantidade &gt; 0, subtotal = quantidade × preço.</span></li>
+            <li class="reveal esconde-baixo" style="--i:5"><span><b>Views bi_*</b> entregam valor líquido, custo e lucro prontos para o BI.</span></li>
+          </ul>
+        </div>
+        <div class="transacao reveal" style="--i:4">
+          <h3>Transação: o pedido é tudo ou nada</h3>
+          <ol>
+            <li><span>1</span><div>Trava o estoque da peça <code>FOR UPDATE</code></div></li>
+            <li><span>2</span><div>Confere a quantidade e desconta <code>UPDATE</code></div></li>
+            <li><span>3</span><div>Grava o pedido e os itens <code>INSERT</code></div></li>
+            <li><span>4</span><div>Confirma tudo <code>COMMIT</code></div></li>
+          </ol>
+          <p class="erro">Se qualquer passo falhar, <code>ROLLBACK</code> desfaz tudo e o estoque não fica errado.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Lógica de Programação -->
+  <section class="slide escuro" aria-label="Lógica de Programação">
+    <div class="slide-content">
+      <div class="duas">
+        <div>
+          <span class="tag reveal">2 · Lógica de Programação</span>
+          <h2 class="reveal" style="--i:1">O código <em>faz as contas</em></h2>
+          <ul class="pontos">
+            <li class="reveal" style="--i:2"><span><b>Indicadores:</b> soma com <code class="inline">for</code>, maior e menor com <code class="inline">while</code>, média = soma ÷ quantidade.</span></li>
+            <li class="reveal" style="--i:3"><span><b>Vitrine:</b> filtro com <code class="inline">&amp;&amp;</code> (tamanho, cor, preço); sem preço vai para o fim.</span></li>
+            <li class="reveal esconde-baixo" style="--i:4"><span><b>Em lote:</b> <code class="inline">continue</code> pula quem já está pronto; <code class="inline">try/catch</code> guarda os erros sem parar.</span></li>
+          </ul>
+        </div>
+        <div class="codigo reveal" style="--i:3">
+          <div class="barra"><i></i><i></i><i></i><span>lib/core/indicadores_vendas.dart</span></div>
+<pre><span class="k">if</span> (vendas.isEmpty) <span class="k">return null</span>; <span class="c">// sem dividir por zero</span>
+<span class="t">double</span> soma = <span class="n">0</span>;
+<span class="k">for</span> (<span class="k">final</span> v <span class="k">in</span> vendas) { soma += v; }
+<span class="t">int</span> i = <span class="n">1</span>;
+<span class="k">while</span> (i &lt; vendas.length) {
+  <span class="k">if</span> (vendas[i] &gt; maior) maior = vendas[i];
+  <span class="k">if</span> (vendas[i] &lt; menor) menor = vendas[i];
+  i++;
+}</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · POO -->
+  <section class="slide claro" aria-label="Programação Orientada a Objetos">
+    <div class="slide-content">
+      <div class="duas">
+        <div>
+          <span class="tag reveal">3 · Programação Orientada a Objetos</span>
+          <h2 class="reveal" style="--i:1">As classes <em>barram valores errados</em></h2>
+          <ul class="pontos">
+            <li class="reveal" style="--i:2"><span><b>Abstração:</b> <code class="inline">Produto</code> é abstrata; só existe <code class="inline">Peca</code> ou <code class="inline">Acessorio</code>.</span></li>
+            <li class="reveal" style="--i:3"><span><b>Encapsulamento:</b> <code class="inline">_nome</code> e <code class="inline">_preco</code> são privados e o setter valida.</span></li>
+            <li class="reveal" style="--i:4"><span><b>Polimorfismo:</b> peça responde P, M, G; acessório responde “Único” com <code class="inline">override</code>.</span></li>
+            <li class="reveal esconde-baixo" style="--i:5"><span><b>Ocultação:</b> a sacola guarda os itens num mapa privado.</span></li>
+          </ul>
+        </div>
+        <div class="codigo reveal" style="--i:3">
+          <div class="barra"><i></i><i></i><i></i><span>lib/models/produto.dart</span></div>
+<pre><span class="k">abstract class</span> <span class="t">Produto</span> <span class="k">with</span> <span class="t">Serializavel</span> {
+  <span class="t">String</span> _nome;
+  <span class="t">double</span>? _preco; <span class="c">// null = "Preço a definir"</span>
+
+  <span class="t">String</span> <span class="k">get</span> nome =&gt; _nome;
+  <span class="k">set</span> nome(<span class="t">String</span> valor) =&gt; _nome = <span class="f">_validarNome</span>(valor);
+  <span class="k">set</span> preco(<span class="t">double</span>? valor) =&gt; _preco = <span class="f">_validarPreco</span>(valor);
+}
+<span class="c">// preço negativo → ArgumentError</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · BI -->
+  <section class="slide escuro" aria-label="Business Intelligence">
+    <div class="anel decorative" style="width:46vmax;height:46vmax;left:-20vmax;bottom:-24vmax;color:var(--coral)"></div>
+    <div class="slide-content">
+      <div class="duas">
+        <div>
+          <span class="tag reveal">4 · Business Intelligence</span>
+          <h2 class="reveal" style="--i:1">O dashboard vira <em>informação</em></h2>
+          <ul class="pontos">
+            <li class="reveal" style="--i:2"><span><b>Power Query</b> corrige tipos, tira duplicatas e cria região, faixa de preço e segmento.</span></li>
+            <li class="reveal" style="--i:3"><span><b>Modelo estrela:</b> 3 fatos (vendas, estoque, metas) e 5 dimensões.</span></li>
+            <li class="reveal esconde-baixo" style="--i:4"><span><b>DAX:</b> Faturamento, Ticket médio, Margem, Meta, Curva ABC, em 6 páginas.</span></li>
+          </ul>
+        </div>
+        <div class="codigo reveal" style="--i:3">
+          <div class="barra"><i></i><i></i><i></i><span>medidas DAX</span></div>
+<pre><span class="f">Faturamento</span> = <span class="t">CALCULATE</span>(<span class="t">SUM</span>(fato_Vendas[Valor_Liquido]),
+    fato_Vendas[Status_Pedido] = <span class="s">"Entregue"</span>)
+
+<span class="f">Ticket Médio</span> = <span class="t">DIVIDE</span>([Faturamento],
+    <span class="t">CALCULATE</span>([Pedidos], [Status_Pedido] = <span class="s">"Entregue"</span>))
+<span class="c">// cancelado ou devolvido não é venda</span></pre>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="kpi reveal" style="--i:4"><strong>R$ 261.212,64</strong><span>Faturamento</span></div>
+        <div class="kpi reveal" style="--i:5"><strong>R$ 134,02</strong><span>Ticket médio</span></div>
+        <div class="kpi reveal" style="--i:6"><strong>1.949</strong><span>Pedidos entregues</span></div>
+      </div>
+      <p class="nota reveal esconde-baixo" style="--i:7">Valores dos dados de demonstração (2.257 pedidos simulados).</p>
+    </div>
+  </section>
+
+  <!-- 8 · Fechamento -->
+  <section class="slide claro fecho" aria-label="Fechamento">
+    <div class="slide-content">
+      <span class="tag reveal">Fechamento</span>
+      <h2 class="reveal" style="--i:1">As contas do Dart e do Power BI dão <em>o mesmo resultado</em>.</h2>
+      <div class="resumo">
+        <div class="reveal" style="--i:2"><b>Modelagem</b><span>o banco guarda os dados com regras</span></div>
+        <div class="reveal" style="--i:3"><b>Lógica</b><span>o código faz as contas</span></div>
+        <div class="reveal" style="--i:4"><b>POO</b><span>as classes barram valores errados</span></div>
+        <div class="reveal" style="--i:5"><b>BI</b><span>o dashboard vira informação para a loja</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="nav-dots" aria-label="Slides"></nav>
+<div class="contador" aria-live="polite"></div>
+<div class="keyboard-hint">← → ou role</div>
+
+<script>
+/* Controlador da apresentação: teclado, roda do mouse, toque, pontos e animação de entrada. */
+class Apresentacao {
+  constructor() {
+    this.slides = [...document.querySelectorAll('.slide')];
+    this.atual = 0;
+    this.travado = false;
+    this.pontos = document.querySelector('.nav-dots');
+    this.contador = document.querySelector('.contador');
+    this.barra = document.querySelector('.progresso');
+    this.criarPontos();
+    this.observar();
+    this.ligarEventos();
+    this.atualizar();
+  }
+
+  criarPontos() {
+    this.slides.forEach((s, i) => {
+      const b = document.createElement('button');
+      b.setAttribute('aria-label', `Ir para slide ${i + 1}: ${s.getAttribute('aria-label')}`);
+      b.addEventListener('click', () => this.ir(i));
+      this.pontos.appendChild(b);
+    });
+  }
+
+  // Marca o slide visível: dispara o reveal e sincroniza o índice quando a navegação é por scroll livre.
+  observar() {
+    const io = new IntersectionObserver(entradas => {
+      entradas.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visivel');
+          this.atual = this.slides.indexOf(e.target);
+          this.atualizar();
+        }
+      });
+    }, { threshold: 0.55 });
+    this.slides.forEach(s => io.observe(s));
+  }
+
+  ligarEventos() {
+    document.addEventListener('keydown', e => {
+      if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); this.ir(this.atual + 1); }
+      if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); this.ir(this.atual - 1); }
+      if (e.key === 'Home') { e.preventDefault(); this.ir(0); }
+      if (e.key === 'End') { e.preventDefault(); this.ir(this.slides.length - 1); }
+    });
+    // Roda: um slide por gesto, com trava curta para não pular vários.
+    window.addEventListener('wheel', e => {
+      e.preventDefault();
+      if (this.travado || Math.abs(e.deltaY) < 12) return;
+      this.ir(this.atual + (e.deltaY > 0 ? 1 : -1));
+    }, { passive: false });
+    let y0 = null;
+    window.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; }, { passive: true });
+    window.addEventListener('touchend', e => {
+      if (y0 === null) return;
+      const d = y0 - e.changedTouches[0].clientY;
+      if (Math.abs(d) > 40) this.ir(this.atual + (d > 0 ? 1 : -1));
+      y0 = null;
+    });
+  }
+
+  ir(i) {
+    if (i < 0 || i >= this.slides.length) return;
+    this.atual = i;
+    this.travado = true;
+    this.slides[i].scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    setTimeout(() => (this.travado = false), 700);
+    this.atualizar();
+  }
+
+  atualizar() {
+    [...this.pontos.children].forEach((b, i) => b.setAttribute('aria-current', i === this.atual));
+    this.contador.textContent = `${String(this.atual + 1).padStart(2, '0')} / ${String(this.slides.length).padStart(2, '0')}`;
+    this.barra.style.width = `${((this.atual + 1) / this.slides.length) * 100}%`;
+  }
+}
+new Apresentacao();
+</script>
+</body>
+</html>
